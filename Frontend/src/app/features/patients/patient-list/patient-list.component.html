@@ -1,0 +1,57 @@
+<div class="container-fluid py-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 text-primary mb-0">Patients</h1>
+    <button type="button" class="btn btn-primary" (click)="goNew()">
+      <i class="bi bi-person-plus me-1"></i> Ajouter un patient
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+
+  <div class="card mb-3">
+    <div class="card-body py-2">
+      <label class="form-label small text-muted mb-1">Recherche (nom, prénom, email)</label>
+      <input type="search" class="form-control" [formControl]="searchControl" placeholder="Filtrer la liste…" />
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2 mb-0">Chargement des patients…</p>
+  </div>
+
+  <div *ngIf="!isLoading && filteredPatients.length === 0" class="alert alert-info">
+    Aucun patient à afficher. {{ patients.length === 0 ? 'La liste est vide ou l’API est indisponible.' : 'Aucun résultat pour cette recherche.' }}
+  </div>
+
+  <div *ngIf="!isLoading && filteredPatients.length > 0" class="card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Groupe sanguin</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredPatients">
+            <td>{{ p.nom }}</td>
+            <td>{{ p.prenom }}</td>
+            <td>{{ p.email }}</td>
+            <td>{{ p.telephone || '—' }}</td>
+            <td>{{ p.groupeSanguin || '—' }}</td>
+            <td class="text-end text-nowrap">
+              <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="goDetail(p.id!)">Détail</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary me-1" (click)="goEdit(p.id!)">Modifier</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="deletePatient(p.id!, p.nom)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

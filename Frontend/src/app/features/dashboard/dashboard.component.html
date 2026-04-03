@@ -1,0 +1,58 @@
+<div class="container-fluid py-3">
+  <h1 class="h3 mb-4 text-primary">Tableau de bord eHealth</h1>
+  <div *ngIf="loadError" class="alert alert-warning">{{ loadError }}</div>
+  <div class="row g-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1">Total patients</p>
+              <p class="display-6 fw-bold mb-0" style="color: var(--primary)">{{ totalPatients }}</p>
+            </div>
+            <i class="bi bi-people-fill fs-1 opacity-50" style="color: var(--primary)"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1">Total médecins</p>
+              <p class="display-6 fw-bold mb-0 text-success">{{ totalDoctors }}</p>
+            </div>
+            <i class="bi bi-person-badge fs-1 opacity-50 text-success"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1">Rendez-vous</p>
+              <p class="display-6 fw-bold mb-0 text-warning">{{ staticAppointments }}</p>
+            </div>
+            <i class="bi bi-calendar-week fs-1 opacity-50 text-warning"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="card h-100 border-0">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <p class="text-muted small mb-1">En attente</p>
+              <p class="display-6 fw-bold mb-0 text-danger">{{ staticPending }}</p>
+            </div>
+            <i class="bi bi-hourglass-split fs-1 opacity-50 text-danger"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+<button
+  type="button"
+  class="btn btn-outline-primary btn-sm d-lg-none m-2"
+  data-bs-toggle="collapse"
+  data-bs-target="#sidebarMenu"
+  aria-expanded="false"
+  aria-controls="sidebarMenu">
+  <i class="bi bi-list"></i> Menu
+</button>
+<div id="sidebarMenu" class="collapse d-lg-block border-end bg-white shadow-sm">
+  <nav class="nav flex-column p-3 gap-1" style="min-width: 220px">
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/patients" routerLinkActive="active">
+      <i class="bi bi-people"></i> Patients
+    </a>
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/medecins" routerLinkActive="active">
+      <i class="bi bi-person-badge"></i> Médecins
+    </a>
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/rendez-vous" routerLinkActive="active">
+      <i class="bi bi-calendar-check"></i> Rendez-vous
+    </a>
+  </nav>
+</div>

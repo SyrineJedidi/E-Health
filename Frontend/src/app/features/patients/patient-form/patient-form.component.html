@@ -1,0 +1,49 @@
+<div class="container py-3" style="max-width: 640px">
+  <h1 class="h3 text-primary mb-3">{{ isEditMode ? 'Modifier le patient' : 'Nouveau patient' }}</h1>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card shadow-sm">
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label" for="nom">Nom *</label>
+        <input id="nom" class="form-control" formControlName="nom" />
+        <div class="invalid-feedback d-block" *ngIf="fieldError('nom')">{{ fieldError('nom') }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="prenom">Prénom *</label>
+        <input id="prenom" class="form-control" formControlName="prenom" />
+        <div class="invalid-feedback d-block" *ngIf="fieldError('prenom')">{{ fieldError('prenom') }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="email">Email *</label>
+        <input id="email" type="email" class="form-control" formControlName="email" />
+        <div class="invalid-feedback d-block" *ngIf="fieldError('email')">{{ fieldError('email') }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="telephone">Téléphone</label>
+        <input id="telephone" class="form-control" formControlName="telephone" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="adresse">Adresse</label>
+        <textarea id="adresse" class="form-control" rows="2" formControlName="adresse"></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="dateNaissance">Date de naissance</label>
+        <input id="dateNaissance" type="date" class="form-control" formControlName="dateNaissance" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="groupeSanguin">Groupe sanguin</label>
+        <select id="groupeSanguin" class="form-select" formControlName="groupeSanguin">
+          <option value="">—</option>
+          <option *ngFor="let g of groupes" [value]="g">{{ g }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-footer bg-white d-flex gap-2 justify-content-end">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Annuler</button>
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Enregistrer</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,53 @@
+<div class="container-fluid py-3">
+  <button type="button" class="btn btn-link ps-0 mb-2" (click)="goBack()">
+    <i class="bi bi-arrow-left"></i> Retour
+  </button>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!isLoading && dossier">
+    <div *ngIf="patient" class="card shadow-sm mb-4">
+      <div class="card-header">Patient</div>
+      <div class="card-body">
+        <p class="mb-1"><strong>{{ patient.prenom }} {{ patient.nom }}</strong></p>
+        <p class="text-muted small mb-0">{{ patient.email }} · {{ patient.telephone || 'Pas de téléphone' }}</p>
+      </div>
+    </div>
+
+    <p class="text-muted small mb-2">{{ dossier.message }}</p>
+
+    <div *ngIf="rendezVous.length === 0" class="alert alert-info">
+      Aucun rendez-vous enregistré pour ce patient.
+    </div>
+
+    <div *ngIf="rendezVous.length > 0" class="card shadow-sm">
+      <div class="card-header">Rendez-vous</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Heure</th>
+              <th>Motif</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rdv of rendezVous">
+              <td>{{ rdv.date }}</td>
+              <td>{{ rdv.heure }}</td>
+              <td>{{ rdv.motif }}</td>
+              <td><span class="badge" [ngClass]="badgeClass(rdv.statut)">{{ rdv.statut }}</span></td>
+              <td><span class="text-muted small">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
