@@ -1,0 +1,51 @@
+<div class="ehealth-page container-fluid py-3 py-md-4" style="max-width: 960px">
+  <h1 class="ehealth-page__title h3 mb-3">Mes ordonnances</h1>
+  <p class="text-muted small mb-4">
+    Consultez vos prescriptions et laissez un commentaire pour votre médecin s’il doit le lire avant la prochaine
+    consultation.
+  </p>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2 small mb-0">Chargement…</p>
+  </div>
+
+  <div *ngIf="!loading && errorMessage" class="alert alert-warning">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && !errorMessage && prescriptions.length === 0" class="ehealth-empty border rounded p-4 text-center">
+    <i class="bi bi-capsule fs-1 text-muted d-block mb-2" aria-hidden="true"></i>
+    <p class="mb-0">Aucune ordonnance pour l’instant.</p>
+  </div>
+
+  <div *ngIf="!loading && prescriptions.length > 0" class="d-flex flex-column gap-3">
+    <div *ngFor="let p of prescriptions" class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+          <span class="fw-semibold">Ordonnance n° {{ p.id }}</span>
+          <span class="badge bg-primary-subtle text-primary">{{ p.status }}</span>
+        </div>
+        <p class="small text-muted mb-1">
+          <strong>Date :</strong> {{ p.issuedAt | date : 'short' }} · <strong>Médecin (id) :</strong> {{ p.doctorId }}
+        </p>
+        <p class="small mb-3"><strong>Médicaments :</strong> {{ medsSummary(p) }}</p>
+
+        <label class="form-label small fw-medium" [attr.for]="'pc-' + p.id">Message pour votre médecin</label>
+        <textarea
+          [id]="'pc-' + p.id"
+          class="form-control form-control-sm mb-2"
+          rows="3"
+          maxlength="2000"
+          [disabled]="savingId === p.id"
+          [(ngModel)]="commentDraft[p.id]"
+          placeholder="Ex. : effets ressentis, question sur la posologie…"></textarea>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="savingId === p.id"
+          (click)="saveComment(p)">
+          {{ savingId === p.id ? 'Enregistrement…' : 'Enregistrer le message' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

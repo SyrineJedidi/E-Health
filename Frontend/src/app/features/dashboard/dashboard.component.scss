@@ -1,0 +1,40 @@
+/* BEM: ehealth-page, ehealth-stat-card */
+
+.ehealth-page {
+  &__title {
+    color: var(--ehealth-primary);
+    font-weight: 600;
+  }
+
+  &__loading .spinner-border {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+.ehealth-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ehealth-shadow-hover) !important;
+  }
+
+  &__label {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.7rem;
+  }
+
+  &__value {
+    letter-spacing: -0.02em;
+  }
+
+  &__icon {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover &__icon {
+    transform: scale(1.05);
+  }
+}

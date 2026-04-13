@@ -1,0 +1,39 @@
+<div class="ehealth-page container-fluid py-3 py-md-4" style="max-width: 960px">
+  <h1 class="ehealth-page__title h3 mb-3">Mes patients</h1>
+  <p class="text-muted small mb-4">
+    Liste dérivée de vos ordonnances et, si le service est actif, de vos rendez-vous. Créez une ordonnance pour qu’un
+    patient apparaisse ici.
+  </p>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+  <div *ngIf="!loading && errorMessage" class="alert alert-warning">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && !errorMessage && patients.length === 0" class="alert alert-light border">
+    Aucun patient pour l’instant.
+  </div>
+
+  <div *ngIf="!loading && patients.length > 0" class="table-responsive card border-0 shadow-sm">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Id</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of patients">
+          <td>{{ p.id }}</td>
+          <td>{{ p.nom }}</td>
+          <td>{{ p.prenom }}</td>
+          <td>{{ p.email }}</td>
+          <td>{{ p.telephone ?? '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

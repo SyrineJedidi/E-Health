@@ -1,0 +1,39 @@
+<div class="ehealth-page container-fluid py-3 py-md-4" style="max-width: 960px">
+  <h1 class="ehealth-page__title h3 mb-3">Mes rendez-vous</h1>
+  <p class="text-muted small mb-4">
+    Données issues du microservice rendez-vous (filtrage par médecin). Si le service n’est pas démarré, la liste reste
+    vide.
+  </p>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+  <div *ngIf="!loading && errorMessage" class="alert alert-warning">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && !errorMessage && list.length === 0" class="alert alert-light border">
+    Aucun rendez-vous renvoyé pour le moment.
+  </div>
+
+  <div *ngIf="!loading && list.length > 0" class="table-responsive card border-0 shadow-sm">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Heure</th>
+          <th>Motif</th>
+          <th>Statut</th>
+          <th>Patient (id)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rv of list">
+          <td>{{ rv.date }}</td>
+          <td>{{ rv.heure }}</td>
+          <td>{{ rv.motif }}</td>
+          <td>{{ rv.statut }}</td>
+          <td>{{ rv.patientId }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

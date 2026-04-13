@@ -5,13 +5,20 @@ import {
   HttpInterceptor,
   HttpRequest
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, catchError, finalize, throwError } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 import { LoadingService } from '../services/loading.service';
+import { ToastService } from '../services/toast.service';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(private readonly loading: LoadingService) {}
+  constructor(
+    private readonly loading: LoadingService,
+    private readonly injector: Injector,
+    private readonly toast: ToastService
+  ) {}
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     this.loading.begin();
@@ -31,12 +38,20 @@ export class HttpErrorInterceptor implements HttpInterceptor {
 
     return next.handle(outgoing).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 0) {
-          console.error('Server unreachable');
-        } else if (error.status === 404) {
-          console.error('Resource not found');
+        if (error.status === 401) {
+          const auth = this.injector.get(AuthService);
+          const router = this.injector.get(Router);
+          auth.logout();
+          void router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
+        } else if (error.status === 0) {
+          this.toast.warning(
+            'Serveur inaccessible. Vérifiez la passerelle API et que les microservices sont démarrés.'
+          );
         } else if (error.status === 500) {
-          console.error('Internal server error');
+          // Les échecs GET (listes, dashboard) sont gérés dans les composants ; éviter toast + bannière.
+          if (req.method !== 'GET') {
+            this.toast.error('Erreur serveur. Réessayez plus tard ou contactez le support.');
+          }
         }
         return throwError(() => error);
       }),

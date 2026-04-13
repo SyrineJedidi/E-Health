@@ -1,0 +1,13 @@
+/* BEM: ehealth-rx-form */
+
+.ehealth-page__title {
+  color: var(--ehealth-primary);
+  font-weight: 600;
+}
+
+.ehealth-rx-form {
+  &__card {
+    border-radius: var(--ehealth-radius);
+    border: 1px solid var(--ehealth-border);
+  }
+}

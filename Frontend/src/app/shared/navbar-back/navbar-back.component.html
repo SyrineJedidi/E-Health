@@ -1,0 +1,62 @@
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm ehealth-navbar sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/admin/dashboard">
+      <i class="bi bi-heart-pulse-fill fs-4" aria-hidden="true"></i>
+      <span>eHealth</span>
+      <small class="d-none d-md-inline opacity-75 fw-normal ms-1">Gestion</small>
+    </a>
+    <button
+      type="button"
+      class="navbar-toggler"
+      (click)="toggleNav()"
+      [attr.aria-expanded]="navOpen"
+      aria-controls="navbarBackMain"
+      aria-label="Ouvrir le menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div
+      class="navbar-collapse collapse"
+      [class.show]="navOpen"
+      id="navbarBackMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            routerLink="/admin/dashboard"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            >Tableau de bord</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/admin/patients" routerLinkActive="active">Patients</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/admin/medecins" routerLinkActive="active">Médecins</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/admin/rendez-vous" routerLinkActive="active">Rendez-vous</a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            routerLink="/admin/ordonnances"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }">
+            Ordonnances
+          </a>
+        </li>
+        <ng-container *ngIf="loggedIn$ | async as logged">
+          <li class="nav-item" *ngIf="!logged">
+            <a class="nav-link" routerLink="/login" routerLinkActive="active">Connexion</a>
+          </li>
+          <li class="nav-item" *ngIf="logged">
+            <button type="button" class="btn btn-link nav-link py-0 border-0 text-white" (click)="logout()">
+              Déconnexion
+            </button>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-loader',
-  templateUrl: './loader.component.html'
+  templateUrl: './loader.component.html',
+  styleUrl: './loader.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoaderComponent {
   readonly loading$: Observable<boolean>;

@@ -1,0 +1,13 @@
+.ehealth-portal-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  color: inherit;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+.ehealth-portal-card--staff {
+  background: linear-gradient(180deg, #fffbeb 0%, #fff 40%);
+}

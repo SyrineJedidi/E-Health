@@ -1,0 +1,18 @@
+/* BEM: ehealth-rx-list */
+
+.ehealth-page__title {
+  color: var(--ehealth-primary);
+  font-weight: 600;
+}
+
+.ehealth-rx-list {
+  &__table-card {
+    border-radius: var(--ehealth-radius);
+    overflow: hidden;
+    box-shadow: var(--ehealth-shadow);
+  }
+}
+
+.bg-primary-subtle {
+  background-color: rgba(var(--ehealth-primary-rgb), 0.12) !important;
+}

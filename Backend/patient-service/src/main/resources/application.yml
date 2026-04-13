@@ -26,6 +26,11 @@ spring:
 
 server:
   port: 8081
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 eureka:
   client:
@@ -45,6 +50,10 @@ management:
     web:
       exposure:
         include: health,info
+
+# Même secret que auth-service (JWT HS256) — ressource sécurisée
+jwt:
+  secret: eHealthSecretKey2024VeryLongSecretKeyForJWTGenerationAtLeast256BitsLong
 
 feign:
   circuitbreaker:

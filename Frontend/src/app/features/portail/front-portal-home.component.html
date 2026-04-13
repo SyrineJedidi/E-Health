@@ -1,0 +1,71 @@
+<div class="ehealth-page container-fluid py-3 py-md-4">
+  <div *ngIf="infoMessage" class="alert alert-info" role="alert">{{ infoMessage }}</div>
+
+  <h1 class="ehealth-page__title h3 mb-2">Bienvenue sur le portail eHealth</h1>
+  <p class="text-muted mb-4" *ngIf="auth.isPatient()">Accédez à vos rendez-vous et à vos ordonnances.</p>
+  <p class="text-muted mb-4" *ngIf="!auth.isPatient()">Espace portail — contenu selon votre profil.</p>
+
+  <div class="row g-4" *ngIf="auth.isPatient()">
+    <div class="col-md-6 col-xl-4">
+      <a routerLink="/portail/rendez-vous" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm ehealth-portal-card">
+          <div class="card-body">
+            <i class="bi bi-calendar-check fs-2 text-primary mb-2 d-block" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Mes rendez-vous</h2>
+            <p class="text-muted small mb-0">Liste de vos rendez-vous enregistrés.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+      <a routerLink="/portail/ordonnances" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm ehealth-portal-card">
+          <div class="card-body">
+            <i class="bi bi-capsule fs-2 text-primary mb-2 d-block" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Mes ordonnances</h2>
+            <p class="text-muted small mb-0">Ordonnances et message pour votre médecin.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4" *ngIf="auth.getRole() === 'DOCTOR'">
+    <div class="col-md-6 col-xl-4">
+      <a routerLink="/cabinet" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm border-info ehealth-portal-card">
+          <div class="card-body">
+            <i class="bi bi-briefcase-medical fs-2 text-info mb-2 d-block" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Mon cabinet</h2>
+            <p class="text-muted small mb-0">Patients, rendez-vous et ordonnances.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4" *ngIf="!auth.isPatient() && auth.isAdmin()">
+    <div class="col-md-6 col-xl-4">
+      <a routerLink="/portail/medecins" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm ehealth-portal-card">
+          <div class="card-body">
+            <i class="bi bi-person-badge fs-2 text-success mb-2 d-block" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Médecins</h2>
+            <p class="text-muted small mb-0">Aperçu portail (démo).</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6 col-xl-4">
+      <a routerLink="/admin/dashboard" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm border-warning ehealth-portal-card ehealth-portal-card--staff">
+          <div class="card-body">
+            <i class="bi bi-speedometer2 fs-2 text-warning mb-2 d-block" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Espace professionnel</h2>
+            <p class="text-muted small mb-0">Tableau de bord, patients et ordonnances.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

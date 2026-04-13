@@ -2,6 +2,8 @@ package com.ehealth.patient.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,31 +30,38 @@ public class Patient {
     private Long id;
 
     @NotBlank
-    @Column(nullable = false)
-    private String nom;
+    @Column(name = "nom", nullable = false)
+    private String firstName;
 
     @NotBlank
-    @Column(nullable = false)
-    private String prenom;
+    @Column(name = "prenom", nullable = false)
+    private String lastName;
 
     @Email
     @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column
-    private String telephone;
+    @Column(name = "telephone")
+    private String phone;
 
-    @Column
-    private String adresse;
+    @Column(name = "adresse")
+    private String address;
 
-    @Column
-    private LocalDate dateNaissance;
+    @Column(name = "date_naissance")
+    private LocalDate dateOfBirth;
 
-    @Column
-    private String groupeSanguin;
+    @Column(name = "groupe_sanguin")
+    private String bloodType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 16)
+    private Gender gender;
+
+    @Column(length = 4000)
+    private String medicalHistory;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 }

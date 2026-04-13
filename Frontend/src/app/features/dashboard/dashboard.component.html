@@ -1,55 +1,65 @@
-<div class="container-fluid py-3">
-  <h1 class="h3 mb-4 text-primary">Tableau de bord eHealth</h1>
-  <div *ngIf="loadError" class="alert alert-warning">{{ loadError }}</div>
-  <div class="row g-4">
-    <div class="col-md-6 col-xl-3">
-      <div class="card h-100 border-0">
+<div class="ehealth-page container-fluid py-3 py-md-4">
+  <h1 class="ehealth-page__title h3 mb-4">Tableau de bord eHealth</h1>
+
+  <div *ngIf="loading" class="ehealth-page__loading text-center py-5">
+    <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+    <p class="text-muted mt-3 mb-0">Chargement des indicateurs…</p>
+  </div>
+
+  <div *ngIf="!loading && apiNotice" class="alert alert-light border shadow-sm mb-4" role="status">
+    <i class="bi bi-info-circle me-2 text-primary" aria-hidden="true"></i>
+    {{ apiNotice }}
+  </div>
+
+  <div *ngIf="!loading" class="row g-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="ehealth-stat-card card h-100 border-0">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <p class="text-muted small mb-1">Total patients</p>
-              <p class="display-6 fw-bold mb-0" style="color: var(--primary)">{{ totalPatients }}</p>
+              <p class="ehealth-stat-card__label text-muted small mb-1">Total patients</p>
+              <p class="ehealth-stat-card__value display-6 fw-bold mb-0 text-primary">{{ totalPatients }}</p>
             </div>
-            <i class="bi bi-people-fill fs-1 opacity-50" style="color: var(--primary)"></i>
+            <i class="bi bi-people-fill ehealth-stat-card__icon fs-1 opacity-50 text-primary" aria-hidden="true"></i>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-      <div class="card h-100 border-0">
+    <div class="col-sm-6 col-xl-3">
+      <div class="ehealth-stat-card card h-100 border-0">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <p class="text-muted small mb-1">Total médecins</p>
-              <p class="display-6 fw-bold mb-0 text-success">{{ totalDoctors }}</p>
+              <p class="ehealth-stat-card__label text-muted small mb-1">Total médecins</p>
+              <p class="ehealth-stat-card__value display-6 fw-bold mb-0 text-success">{{ totalDoctors }}</p>
             </div>
-            <i class="bi bi-person-badge fs-1 opacity-50 text-success"></i>
+            <i class="bi bi-person-badge ehealth-stat-card__icon fs-1 opacity-50 text-success" aria-hidden="true"></i>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-      <div class="card h-100 border-0">
+    <div class="col-sm-6 col-xl-3">
+      <div class="ehealth-stat-card card h-100 border-0">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <p class="text-muted small mb-1">Rendez-vous</p>
-              <p class="display-6 fw-bold mb-0 text-warning">{{ staticAppointments }}</p>
+              <p class="ehealth-stat-card__label text-muted small mb-1">Rendez-vous</p>
+              <p class="ehealth-stat-card__value display-6 fw-bold mb-0 text-warning">{{ staticAppointments }}</p>
             </div>
-            <i class="bi bi-calendar-week fs-1 opacity-50 text-warning"></i>
+            <i class="bi bi-calendar-week ehealth-stat-card__icon fs-1 opacity-50 text-warning" aria-hidden="true"></i>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-      <div class="card h-100 border-0">
+    <div class="col-sm-6 col-xl-3">
+      <div class="ehealth-stat-card card h-100 border-0">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <p class="text-muted small mb-1">En attente</p>
-              <p class="display-6 fw-bold mb-0 text-danger">{{ staticPending }}</p>
+              <p class="ehealth-stat-card__label text-muted small mb-1">En attente</p>
+              <p class="ehealth-stat-card__value display-6 fw-bold mb-0 text-danger">{{ staticPending }}</p>
             </div>
-            <i class="bi bi-hourglass-split fs-1 opacity-50 text-danger"></i>
+            <i class="bi bi-hourglass-split ehealth-stat-card__icon fs-1 opacity-50 text-danger" aria-hidden="true"></i>
           </div>
         </div>
       </div>

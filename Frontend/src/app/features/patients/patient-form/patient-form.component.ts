@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Patient } from '../../../core/models/patient.model';
 import { PatientService } from '../../../core/services/patient.service';
+import { sanitizePlainText } from '../../../core/utils/sanitize.util';
 
 @Component({
   selector: 'app-patient-form',
-  templateUrl: './patient-form.component.html'
+  templateUrl: './patient-form.component.html',
+  styleUrl: './patient-form.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatientFormComponent implements OnInit {
   form: FormGroup;
@@ -15,6 +18,8 @@ export class PatientFormComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   readonly groupes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor(
     private readonly fb: FormBuilder,
@@ -59,9 +64,11 @@ export class PatientFormComponent implements OnInit {
             groupeSanguin: p.groupeSanguin ?? ''
           });
         }
+        this.cdr.markForCheck();
       },
       error: (err: Error) => {
         this.errorMessage = err.message;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -72,48 +79,53 @@ export class PatientFormComponent implements OnInit {
     this.errorMessage = '';
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
     const value = this.form.value as Record<string, string>;
     const patient: Patient = {
-      nom: value['nom'] ?? '',
-      prenom: value['prenom'] ?? '',
-      email: value['email'] ?? '',
-      telephone: value['telephone'] || undefined,
-      adresse: value['adresse'] || undefined,
-      dateNaissance: value['dateNaissance'] || undefined,
-      groupeSanguin: value['groupeSanguin'] || undefined
+      nom: sanitizePlainText(value['nom'], 120),
+      prenom: sanitizePlainText(value['prenom'], 120),
+      email: (value['email'] ?? '').trim().toLowerCase(),
+      telephone: sanitizePlainText(value['telephone'], 40) || undefined,
+      adresse: sanitizePlainText(value['adresse'], 500) || undefined,
+      dateNaissance: (value['dateNaissance'] ?? '').trim() || undefined,
+      groupeSanguin: sanitizePlainText(value['groupeSanguin'], 8) || undefined
     };
     if (this.isEditMode && this.patientId != null) {
       this.patientService.updatePatient(this.patientId, patient).subscribe({
         next: (res) => {
           this.successMessage = res.message || 'Patient mis à jour.';
-          setTimeout(() => void this.router.navigate(['/patients', this.patientId]), 800);
+          this.cdr.markForCheck();
+          setTimeout(() => void this.router.navigate(['/admin/patients', this.patientId]), 800);
         },
         error: (err: Error) => {
           this.errorMessage = err.message;
+          this.cdr.markForCheck();
         }
       });
     } else {
       this.patientService.createPatient(patient).subscribe({
         next: (res) => {
           this.successMessage = res.message || 'Patient créé.';
+          this.cdr.markForCheck();
           const newId = res.data?.id;
           if (newId != null) {
-            setTimeout(() => void this.router.navigate(['/patients', newId]), 800);
+            setTimeout(() => void this.router.navigate(['/admin/patients', newId]), 800);
           } else {
-            void this.router.navigate(['/patients']);
+            void this.router.navigate(['/admin/patients']);
           }
         },
         error: (err: Error) => {
           this.errorMessage = err.message;
+          this.cdr.markForCheck();
         }
       });
     }
   }
 
   cancel(): void {
-    void this.router.navigate(['/patients']);
+    void this.router.navigate(['/admin/patients']);
   }
 
   fieldError(field: string): string {

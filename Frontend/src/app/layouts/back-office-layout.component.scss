@@ -1,0 +1,7 @@
+.back-office-layout {
+  min-height: calc(100vh - 56px);
+
+  &__main {
+    background: var(--ehealth-bg, #f1f5f9);
+  }
+}

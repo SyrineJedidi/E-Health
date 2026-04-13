@@ -1,0 +1,23 @@
+/* BEM: ehealth-placeholder */
+
+.ehealth-placeholder {
+  &__card {
+    border-radius: var(--ehealth-radius);
+  }
+
+  &__icon {
+    font-size: 3rem;
+    color: var(--ehealth-primary);
+    opacity: 0.85;
+  }
+
+  &__title {
+    color: var(--ehealth-text);
+    font-weight: 600;
+  }
+
+  &__text {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+}

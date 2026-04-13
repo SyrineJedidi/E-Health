@@ -1,0 +1,127 @@
+<div class="ehealth-auth-page ehealth-auth-page--register">
+  <aside class="ehealth-auth-page__promo" aria-label="Présentation eHealth">
+    <div class="ehealth-auth-page__promo-bg" aria-hidden="true"></div>
+    <span class="ehealth-auth-page__float ehealth-auth-page__float--1" aria-hidden="true">✚</span>
+    <span class="ehealth-auth-page__float ehealth-auth-page__float--2" aria-hidden="true">✚</span>
+    <span class="ehealth-auth-page__float ehealth-auth-page__float--3" aria-hidden="true">✚</span>
+
+    <div class="ehealth-auth-page__promo-inner">
+      <div class="ehealth-auth-page__promo-logo">
+        <i class="bi bi-heart-pulse-fill ehealth-auth-page__promo-logo-icon" aria-hidden="true"></i>
+        <span class="ehealth-auth-page__promo-logo-text">eHealth</span>
+      </div>
+      <p class="ehealth-auth-page__tagline">Votre santé, notre priorité</p>
+      <ul class="ehealth-auth-page__highlights">
+        <li>
+          <span class="ehealth-auth-page__highlight-icon" aria-hidden="true">🔒</span>
+          <span>Sécurisé</span>
+        </li>
+        <li>
+          <span class="ehealth-auth-page__highlight-icon" aria-hidden="true">👨‍⚕️</span>
+          <span>Médecins certifiés</span>
+        </li>
+        <li>
+          <span class="ehealth-auth-page__highlight-icon" aria-hidden="true">📋</span>
+          <span>Ordonnances digitales</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="ehealth-auth-page__heartbeat" aria-hidden="true">
+      <svg class="ehealth-auth-page__heartbeat-svg" viewBox="0 0 400 48" preserveAspectRatio="none">
+        <path
+          class="ehealth-auth-page__heartbeat-path"
+          d="M0,24 L40,24 L52,8 L68,40 L84,24 L400,24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </div>
+  </aside>
+
+  <main class="ehealth-auth-page__main">
+    <div class="ehealth-auth-page__form-card">
+      <div class="ehealth-auth-page__mobile-brand">
+        <i class="bi bi-heart-pulse-fill" aria-hidden="true"></i>
+        <span>eHealth</span>
+      </div>
+
+      <div class="ehealth-auth-page__avatar" aria-hidden="true">
+        <i class="bi bi-person-circle"></i>
+      </div>
+
+      <header class="ehealth-auth-page__header">
+        <h1 class="ehealth-auth-page__title">Création de compte</h1>
+        <span class="ehealth-auth-page__title-accent" aria-hidden="true"></span>
+        <p class="ehealth-auth-page__subtitle">Rejoignez la plateforme eHealth en quelques instants</p>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="ehealth-auth-page__form">
+        <div class="ehealth-auth-page__field">
+          <label class="ehealth-auth-page__label" for="reg-email">Email</label>
+          <input
+            id="reg-email"
+            type="email"
+            class="ehealth-auth-input"
+            formControlName="email"
+            autocomplete="username"
+            [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched" />
+          <span class="ehealth-field-error" *ngIf="fieldError('email')">{{ fieldError('email') }}</span>
+        </div>
+
+        <div class="ehealth-auth-page__field">
+          <label class="ehealth-auth-page__label" for="reg-password">Mot de passe (min. 8 caractères)</label>
+          <div class="ehealth-auth-page__pw-wrap">
+            <input
+              id="reg-password"
+              type="password"
+              class="ehealth-auth-input ehealth-auth-input--has-trail"
+              formControlName="password"
+              autocomplete="new-password"
+              [class.is-invalid]="form.get('password')?.invalid && form.get('password')?.touched" />
+            <span class="ehealth-auth-page__pw-eye" aria-hidden="true" title="Mot de passe masqué">
+              <i class="bi bi-eye"></i>
+            </span>
+          </div>
+          <span class="ehealth-field-error" *ngIf="fieldError('password')">{{ fieldError('password') }}</span>
+        </div>
+
+        <div class="row ehealth-auth-page__name-row">
+          <div class="col-md-6 ehealth-auth-page__field">
+            <label class="ehealth-auth-page__label" for="reg-fn">Prénom</label>
+            <input id="reg-fn" type="text" class="ehealth-auth-input" formControlName="firstName" maxlength="80" />
+          </div>
+          <div class="col-md-6 ehealth-auth-page__field">
+            <label class="ehealth-auth-page__label" for="reg-ln">Nom</label>
+            <input id="reg-ln" type="text" class="ehealth-auth-input" formControlName="lastName" maxlength="80" />
+          </div>
+        </div>
+
+        <div class="ehealth-auth-page__field">
+          <label class="ehealth-auth-page__label" for="reg-role">Rôle</label>
+          <div class="ehealth-auth-page__select-wrap">
+            <select id="reg-role" class="ehealth-auth-select" formControlName="role">
+              <option *ngFor="let r of roles" [value]="r">
+                {{ r === 'DOCTOR' ? 'Médecin' : r === 'ADMIN' ? 'Administrateur' : 'Patient' }}
+              </option>
+            </select>
+            <i class="bi bi-chevron-down ehealth-auth-page__select-chevron" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="ehealth-auth-page__alert ehealth-auth-page__alert--danger">{{ errorMessage }}</div>
+
+        <button type="submit" class="ehealth-auth-page__submit" [disabled]="form.invalid">
+          <i class="bi bi-person-plus-fill ehealth-auth-page__submit-icon" aria-hidden="true"></i>
+          S'inscrire
+        </button>
+      </form>
+
+      <p class="ehealth-auth-page__footer-link">
+        <a routerLink="/login">Déjà un compte ? Connexion</a>
+      </p>
+    </div>
+  </main>
+</div>

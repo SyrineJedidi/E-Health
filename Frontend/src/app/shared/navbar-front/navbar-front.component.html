@@ -1,0 +1,59 @@
+<nav class="navbar navbar-expand-lg navbar-dark ehealth-navbar ehealth-navbar--front sticky-top shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/portail/accueil">
+      <i class="bi bi-heart-pulse-fill fs-4" aria-hidden="true"></i>
+      <span>eHealth</span>
+      <small class="d-none d-md-inline opacity-75 fw-normal ms-1">Portail</small>
+    </a>
+    <button
+      type="button"
+      class="navbar-toggler"
+      (click)="toggleNav()"
+      [attr.aria-expanded]="navOpen"
+      aria-controls="navbarFrontMain"
+      aria-label="Ouvrir le menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="navbar-collapse collapse" [class.show]="navOpen" id="navbarFrontMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            routerLink="/portail/accueil"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            >Accueil</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="auth.isPatient()">
+          <a class="nav-link" routerLink="/portail/rendez-vous" routerLinkActive="active">Mes rendez-vous</a>
+        </li>
+        <li class="nav-item" *ngIf="auth.isPatient()">
+          <a class="nav-link" routerLink="/portail/ordonnances" routerLinkActive="active">Mes ordonnances</a>
+        </li>
+        <li class="nav-item" *ngIf="auth.isAdmin()">
+          <a class="nav-link" routerLink="/portail/medecins" routerLinkActive="active">Médecins</a>
+        </li>
+        <li class="nav-item" *ngIf="auth.getRole() === 'DOCTOR'">
+          <a class="nav-link text-info" routerLink="/cabinet">Mon cabinet</a>
+        </li>
+        <li class="nav-item" *ngIf="auth.isAdmin()">
+          <a class="nav-link text-warning" routerLink="/admin/dashboard">Espace professionnel</a>
+        </li>
+        <ng-container *ngIf="loggedIn$ | async as logged">
+          <li class="nav-item" *ngIf="!logged">
+            <a class="nav-link" routerLink="/login">Connexion</a>
+          </li>
+          <li class="nav-item" *ngIf="logged">
+            <a class="nav-link" routerLink="/portail/changer-mot-de-passe" routerLinkActive="active">Mot de passe</a>
+          </li>
+          <li class="nav-item" *ngIf="logged">
+            <button type="button" class="btn btn-link nav-link py-0 border-0 text-white" (click)="logout()">
+              Déconnexion
+            </button>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+  </div>
+</nav>

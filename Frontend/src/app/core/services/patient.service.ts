@@ -5,6 +5,9 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { DossierMedical, Patient } from '../models/patient.model';
 
+/**
+ * Accès HTTP au microservice patients (`ApiResponse<T>` encapsulé).
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -63,11 +66,28 @@ export class PatientService {
       .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
   }
 
+  /** Dossier du patient connecté (JWT = email), pour le portail. */
+  getMyDossier(): Observable<ApiResponse<DossierMedical>> {
+    return this.http
+      .get<ApiResponse<DossierMedical>>(`${this.baseUrl}/me/dossier`, { observe: 'body' })
+      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
-    const message =
-      error.error && typeof error.error === 'object' && 'message' in error.error
-        ? String((error.error as { message: string }).message)
-        : error.message || 'Erreur réseau ou serveur';
+    const message = this.userFacingMessage(error);
     return throwError(() => new Error(message));
+  }
+
+  private userFacingMessage(error: HttpErrorResponse): string {
+    if (error.error && typeof error.error === 'object' && 'message' in error.error) {
+      return String((error.error as { message: string }).message);
+    }
+    if (error.status === 0) {
+      return 'Serveur inaccessible (réseau ou passerelle arrêtée).';
+    }
+    if (error.status >= 500) {
+      return 'Le service patients est temporairement indisponible.';
+    }
+    return error.status ? `Erreur ${error.status}` : 'Erreur réseau ou serveur';
   }
 }

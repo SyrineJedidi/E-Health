@@ -1,0 +1,14 @@
+# Maven (tous les modules Backend)
+Backend/**/target/
+
+# Node / Angular
+Frontend/node_modules/
+Frontend/dist/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+Thumbs.db
+Desktop.ini

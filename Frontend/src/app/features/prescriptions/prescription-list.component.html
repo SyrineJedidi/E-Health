@@ -1,0 +1,115 @@
+<div class="ehealth-page ehealth-rx-list container-fluid py-3 py-md-4">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <h1 class="ehealth-page__title h3 mb-0">Ordonnances</h1>
+    <a routerLink="/admin/ordonnances/nouvelle" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Nouvelle ordonnance
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="ehealth-page__loading text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-3 mb-0">Chargement des ordonnances…</p>
+  </div>
+
+  <div *ngIf="!loading && errorMessage" class="alert alert-warning" role="alert">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && !errorMessage && prescriptions.length === 0" class="ehealth-empty" role="status">
+    <div class="ehealth-empty__icon"><i class="bi bi-capsule" aria-hidden="true"></i></div>
+    <p class="ehealth-empty__title">Aucune ordonnance</p>
+    <p class="mb-0 small">Créez une ordonnance pour un patient ou vérifiez que le service est démarré.</p>
+  </div>
+
+  <!-- Desktop -->
+  <div *ngIf="!loading && prescriptions.length > 0" class="card border-0 d-none d-md-block ehealth-rx-list__table-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Patient</th>
+            <th scope="col">Médecin</th>
+            <th scope="col">Date</th>
+            <th scope="col">Statut</th>
+            <th scope="col">Médicaments</th>
+            <th scope="col">Message patient</th>
+            <th scope="col" class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of prescriptions">
+            <td>{{ p.id }}</td>
+            <td>{{ p.patientId }}</td>
+            <td>{{ p.doctorId }}</td>
+            <td>{{ p.issuedAt | date : 'short' }}</td>
+            <td><span class="badge rounded-pill bg-primary-subtle text-primary">{{ p.status }}</span></td>
+            <td>
+              <span *ngFor="let m of p.medications; let last = last">
+                {{ m.name }} ({{ m.dosage }})<span *ngIf="!last">, </span>
+              </span>
+            </td>
+            <td class="small text-muted" style="max-width: 220px">
+              <span *ngIf="p.patientComment">{{ p.patientComment }}</span>
+              <span *ngIf="!p.patientComment" class="fst-italic">—</span>
+            </td>
+            <td class="text-end text-nowrap">
+              <a [routerLink]="['/admin/ordonnances', p.id, 'edition']" class="btn btn-outline-primary btn-sm me-1">
+                Modifier
+              </a>
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                (click)="deletePrescription(p)"
+                [disabled]="deletingId === p.id">
+                {{ deletingId === p.id ? '…' : 'Supprimer' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile -->
+  <div class="d-md-none" *ngIf="!loading && prescriptions.length > 0">
+    <div *ngFor="let p of prescriptions" class="ehealth-mobile-card">
+      <div class="ehealth-mobile-card__row">
+        <span class="ehealth-mobile-card__label">Id</span>
+        <span>{{ p.id }}</span>
+      </div>
+      <div class="ehealth-mobile-card__row">
+        <span class="ehealth-mobile-card__label">Patient / Médecin</span>
+        <span>{{ p.patientId }} / {{ p.doctorId }}</span>
+      </div>
+      <div class="ehealth-mobile-card__row">
+        <span class="ehealth-mobile-card__label">Date</span>
+        <span>{{ p.issuedAt | date : 'short' }}</span>
+      </div>
+      <div class="ehealth-mobile-card__row">
+        <span class="ehealth-mobile-card__label">Statut</span>
+        <span class="badge rounded-pill bg-primary-subtle text-primary">{{ p.status }}</span>
+      </div>
+      <div class="ehealth-mobile-card__row align-items-start">
+        <span class="ehealth-mobile-card__label">Médicaments</span>
+        <span class="text-end">
+          <span *ngFor="let m of p.medications; let last = last">
+            {{ m.name }}<span *ngIf="!last">, </span>
+          </span>
+        </span>
+      </div>
+      <div class="ehealth-mobile-card__row align-items-start" *ngIf="p.patientComment">
+        <span class="ehealth-mobile-card__label">Message patient</span>
+        <span class="text-end small">{{ p.patientComment }}</span>
+      </div>
+      <div class="ehealth-mobile-card__actions">
+        <a [routerLink]="['/admin/ordonnances', p.id, 'edition']" class="btn btn-outline-primary btn-sm">Modifier</a>
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          (click)="deletePrescription(p)"
+          [disabled]="deletingId === p.id">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

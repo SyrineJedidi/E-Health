@@ -1,11 +1,18 @@
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\service\PatientService.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\model\Gender.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\controller\PatientController.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\dto\DossierMedicalDTO.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\controller\PatientPortalController.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\dto\ApiResponse.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\controller\PublicPatientController.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\security\JwtAuthenticationFilter.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\client\AppointmentClientFallback.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\repository\PatientRepository.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\security\JwtUserDetailsService.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\dto\RendezVousDTO.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\security\JwtUtil.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\exception\PatientNotFoundException.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\exception\ErrorResponse.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\dto\PatientDTO.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\PatientServiceApplication.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\client\AppointmentClient.java
@@ -13,3 +20,5 @@ C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\eh
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\exception\EmailAlreadyExistsException.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\exception\GlobalExceptionHandler.java
 C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\model\Patient.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\config\SecurityConfig.java
+C:\Users\USER\Desktop\Micro_Service\Backend\patient-service\src\main\java\com\ehealth\patient\exception\ResourceNotFoundException.java

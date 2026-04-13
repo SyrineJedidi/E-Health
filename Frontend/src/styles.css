@@ -1,68 +1,261 @@
+/* =============================================================================
+   eHealth — design system (SaaS médical)
+   Primaire #2563EB, typo Inter, rayons 12px, transitions 0.2s ease
+   ============================================================================= */
+
 :root {
-  --primary: #1e4db7;
-  --secondary: #0891b2;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --warning: #d97706;
-  --light-bg: #f0f6ff;
+  --ehealth-primary: #2563eb;
+  --ehealth-primary-hover: #1d4ed8;
+  --ehealth-primary-rgb: 37, 99, 235;
+  --ehealth-primary-soft: rgba(37, 99, 235, 0.1);
+  --ehealth-surface: #ffffff;
+  --ehealth-bg: #f1f5f9;
+  --ehealth-text: #0f172a;
+  --ehealth-text-muted: #64748b;
+  --ehealth-border: #e2e8f0;
+  --ehealth-success: #16a34a;
+  --ehealth-danger: #dc2626;
+  --ehealth-warning: #d97706;
+  --ehealth-radius: 12px;
+  --ehealth-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+  --ehealth-shadow-hover: 0 8px 32px rgba(15, 23, 42, 0.1);
+  --ehealth-transition: 0.2s ease;
+  /* Bootstrap alignment */
+  --bs-primary: #2563eb;
+  --bs-primary-rgb: 37, 99, 235;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  background-color: var(--light-bg);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ehealth-text);
+  background-color: var(--ehealth-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+.h1,
+.h2,
+.h3 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.text-primary {
+  color: var(--ehealth-primary) !important;
+}
+
+/* Boutons */
+.btn {
+  border-radius: 10px;
+  font-weight: 500;
+  transition: background-color var(--ehealth-transition), border-color var(--ehealth-transition),
+    color var(--ehealth-transition), box-shadow var(--ehealth-transition), transform var(--ehealth-transition);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background-color: var(--ehealth-primary);
+  border-color: var(--ehealth-primary);
 }
 
-.btn-primary:hover {
-  background-color: #163a8f;
-  border-color: #163a8f;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 77, 183, 0.35);
+.btn-primary:hover:not(:disabled),
+.btn-primary:focus-visible:not(:disabled) {
+  background-color: var(--ehealth-primary-hover);
+  border-color: var(--ehealth-primary-hover);
+  box-shadow: 0 4px 14px rgba(var(--ehealth-primary-rgb), 0.35);
 }
 
+.btn-outline-primary {
+  color: var(--ehealth-primary);
+  border-color: var(--ehealth-primary);
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background-color: var(--ehealth-primary);
+  border-color: var(--ehealth-primary);
+  color: #fff;
+}
+
+/* Cartes */
 .card {
-  box-shadow: 0 2px 12px rgba(30, 77, 183, 0.08);
-  border: none;
-  border-radius: 0.75rem;
+  border: 1px solid var(--ehealth-border);
+  border-radius: var(--ehealth-radius);
+  box-shadow: var(--ehealth-shadow);
+  background: var(--ehealth-surface);
+  transition: box-shadow var(--ehealth-transition), transform var(--ehealth-transition);
+}
+
+.card:hover {
+  box-shadow: var(--ehealth-shadow-hover);
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--primary), #3b6fd4);
+  background: linear-gradient(135deg, var(--ehealth-primary), #3b82f6);
   color: #fff;
-  border-radius: 0.75rem 0.75rem 0 0 !important;
+  border-radius: calc(var(--ehealth-radius) - 1px) calc(var(--ehealth-radius) - 1px) 0 0;
   font-weight: 600;
+  border: none;
 }
 
-.table-hover tbody tr:hover {
-  background-color: rgba(30, 77, 183, 0.06);
+/* Formulaires */
+.form-control,
+.form-select {
+  border-radius: 10px;
+  border-color: var(--ehealth-border);
+  transition: border-color var(--ehealth-transition), box-shadow var(--ehealth-transition);
 }
 
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--ehealth-primary);
+  box-shadow: 0 0 0 3px var(--ehealth-primary-soft);
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--ehealth-text);
+  margin-bottom: 0.35rem;
+}
+
+.ehealth-field-error {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--ehealth-danger);
+  animation: ehealth-slide-in 0.22s ease;
+}
+
+@keyframes ehealth-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* États vides */
+.ehealth-empty {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border-radius: var(--ehealth-radius);
+  background: var(--ehealth-surface);
+  border: 1px dashed var(--ehealth-border);
+  color: var(--ehealth-text-muted);
+}
+
+.ehealth-empty__icon {
+  font-size: 2.5rem;
+  opacity: 0.35;
+  margin-bottom: 0.75rem;
+  color: var(--ehealth-primary);
+}
+
+.ehealth-empty__title {
+  font-weight: 600;
+  color: var(--ehealth-text);
+  margin-bottom: 0.35rem;
+}
+
+/* Loader plein écran */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(2px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader-overlay .spinner-border {
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--ehealth-primary) !important;
+}
+
+/* Navigation */
 .navbar-brand {
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-a.nav-link.active {
+/* Uniquement la barre latérale : ne pas cibler la navbar (sinon conflit avec navbar-dark). */
+.ehealth-sidebar .nav-link.active {
   font-weight: 600;
+  color: var(--ehealth-primary) !important;
+  background-color: var(--ehealth-primary-soft);
+  border-radius: 10px;
 }
 
-.sidebar .nav-link.active,
-.navbar .nav-link.active {
-  color: var(--primary) !important;
-  background-color: rgba(30, 77, 183, 0.12);
+/* Tables desktop */
+.table-hover tbody tr {
+  transition: background-color var(--ehealth-transition);
 }
 
-.loader-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.65);
-  z-index: 2000;
+.table-hover tbody tr:hover {
+  background-color: var(--ehealth-primary-soft);
+}
+
+/* Cartes mobiles réutilisables (listes) */
+.ehealth-mobile-card {
+  border-radius: var(--ehealth-radius);
+  border: 1px solid var(--ehealth-border);
+  background: var(--ehealth-surface);
+  box-shadow: var(--ehealth-shadow);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: box-shadow var(--ehealth-transition);
+}
+
+.ehealth-mobile-card:hover {
+  box-shadow: var(--ehealth-shadow-hover);
+}
+
+.ehealth-mobile-card__row {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--ehealth-border);
+}
+
+.ehealth-mobile-card__row:last-of-type {
+  border-bottom: none;
+}
+
+.ehealth-mobile-card__label {
+  color: var(--ehealth-text-muted);
+  font-weight: 500;
+}
+
+.ehealth-mobile-card__actions {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }

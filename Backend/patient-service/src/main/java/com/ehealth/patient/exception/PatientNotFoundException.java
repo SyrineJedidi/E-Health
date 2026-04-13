@@ -1,8 +1,8 @@
 package com.ehealth.patient.exception;
 
-public class PatientNotFoundException extends RuntimeException {
+public class PatientNotFoundException extends ResourceNotFoundException {
 
     public PatientNotFoundException(Long id) {
-        super("Patient non trouvé avec l'ID : " + id);
+        super("Patient not found with id: " + id);
     }
 }

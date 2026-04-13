@@ -1,0 +1,14 @@
+.doctors-admin {
+  .nav-pills .nav-link {
+    border-radius: var(--ehealth-radius, 12px);
+    color: var(--ehealth-text-muted, #64748b);
+    background: var(--ehealth-surface, #fff);
+    border: 1px solid var(--ehealth-border, #e2e8f0);
+  }
+
+  .nav-pills .nav-link.active {
+    background: var(--ehealth-primary, #2563eb);
+    border-color: var(--ehealth-primary, #2563eb);
+    color: #fff;
+  }
+}

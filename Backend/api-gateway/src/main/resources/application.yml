@@ -1,5 +1,7 @@
+# Port par défaut 8080. Si occupé : PowerShell → $env:SERVER_PORT=8085 puis relancer la gateway
+# (et aligner Frontend environment.apiGatewayUrl sur le même port).
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 spring:
   application:
     name: api-gateway
@@ -14,6 +16,14 @@ spring:
           uri: lb://patient-service
           predicates:
             - Path=/api/patients/**
+        - id: doctor-specialties
+          uri: lb://doctor-service
+          predicates:
+            - Path=/api/specialties/**
+        - id: doctor-availabilities-alt
+          uri: lb://doctor-service
+          predicates:
+            - Path=/api/availabilities/**
         - id: doctor-service
           uri: lb://doctor-service
           predicates:
@@ -25,7 +35,7 @@ spring:
         - id: prescription-service
           uri: lb://prescription-service
           predicates:
-            - Path=/api/prescriptions/**
+            - Path=/api/prescriptions/**,/api/medications/**
         - id: auth-service
           uri: lb://auth-service
           predicates:
@@ -33,8 +43,9 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins:
-              - "http://localhost:4200"
+            allowedOriginPatterns:
+              - "http://localhost:*"
+              - "http://127.0.0.1:*"
             allowedMethods:
               - GET
               - POST

@@ -1,0 +1,48 @@
+<nav class="navbar navbar-expand-lg navbar-dark ehealth-navbar sticky-top shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/cabinet">
+      <i class="bi bi-heart-pulse-fill fs-4" aria-hidden="true"></i>
+      <span>eHealth</span>
+      <small class="d-none d-md-inline opacity-75 fw-normal ms-1">Cabinet</small>
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#cabinetNav"
+      aria-controls="cabinetNav"
+      aria-expanded="false"
+      aria-label="Menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="cabinetNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/cabinet" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+            >Accueil</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/cabinet/patients" routerLinkActive="active">Mes patients</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/cabinet/rendez-vous" routerLinkActive="active">Mes rendez-vous</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/cabinet/ordonnance/nouvelle" routerLinkActive="active">Nouvelle ordonnance</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/cabinet/changer-mot-de-passe" routerLinkActive="active">Mot de passe</a>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="btn btn-link nav-link py-0 border-0 text-white" (click)="logout()">
+            Déconnexion
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<main class="cabinet-layout__main min-vh-100">
+  <router-outlet></router-outlet>
+</main>

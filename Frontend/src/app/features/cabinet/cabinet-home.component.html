@@ -1,0 +1,40 @@
+<div class="ehealth-page container-fluid py-3 py-md-4">
+  <h1 class="ehealth-page__title h3 mb-2">Mon cabinet</h1>
+  <p class="text-muted mb-4">Accès rapide à vos patients, rendez-vous et ordonnances.</p>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/cabinet/patients" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-people fs-2 text-primary d-block mb-2" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Mes patients</h2>
+            <p class="text-muted small mb-0">Patients vus via vos ordonnances ou rendez-vous.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/cabinet/rendez-vous" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-calendar-check fs-2 text-success d-block mb-2" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Mes rendez-vous</h2>
+            <p class="text-muted small mb-0">Liste fournie par le service rendez-vous s’il est démarré.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/cabinet/ordonnance/nouvelle" class="text-decoration-none">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-capsule fs-2 text-warning d-block mb-2" aria-hidden="true"></i>
+            <h2 class="h5 mb-1">Nouvelle ordonnance</h2>
+            <p class="text-muted small mb-0">Prescrire pour un de vos patients.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

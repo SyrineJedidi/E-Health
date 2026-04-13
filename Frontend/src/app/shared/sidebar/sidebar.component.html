@@ -7,19 +7,26 @@
   aria-controls="sidebarMenu">
   <i class="bi bi-list"></i> Menu
 </button>
-<div id="sidebarMenu" class="collapse d-lg-block border-end bg-white shadow-sm">
-  <nav class="nav flex-column p-3 gap-1" style="min-width: 220px">
-    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <i class="bi bi-speedometer2"></i> Dashboard
+<div id="sidebarMenu" class="collapse d-lg-block border-end bg-white shadow-sm ehealth-sidebar">
+  <nav class="ehealth-sidebar__nav nav flex-column p-3 gap-1">
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <i class="bi bi-speedometer2"></i> Tableau de bord
     </a>
-    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/patients" routerLinkActive="active">
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/admin/patients" routerLinkActive="active">
       <i class="bi bi-people"></i> Patients
     </a>
-    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/medecins" routerLinkActive="active">
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/admin/medecins" routerLinkActive="active">
       <i class="bi bi-person-badge"></i> Médecins
     </a>
-    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/rendez-vous" routerLinkActive="active">
+    <a class="nav-link rounded d-flex align-items-center gap-2" routerLink="/admin/rendez-vous" routerLinkActive="active">
       <i class="bi bi-calendar-check"></i> Rendez-vous
+    </a>
+    <a
+      class="nav-link rounded d-flex align-items-center gap-2"
+      routerLink="/admin/ordonnances"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: false }">
+      <i class="bi bi-capsule"></i> Ordonnances
     </a>
   </nav>
 </div>

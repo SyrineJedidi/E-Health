@@ -1,12 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Patient } from '../../../core/models/patient.model';
 import { PatientService } from '../../../core/services/patient.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-patient-list',
-  templateUrl: './patient-list.component.html'
+  templateUrl: './patient-list.component.html',
+  styleUrl: './patient-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatientListComponent implements OnInit {
   patients: Patient[] = [];
@@ -14,31 +25,42 @@ export class PatientListComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly toast = inject(ToastService);
+
   constructor(
     private readonly patientService: PatientService,
     private readonly router: Router,
     fb: FormBuilder
   ) {
     this.searchControl = fb.control('');
+    this.searchControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {
     this.loadPatients();
   }
 
-  /** Recharge la liste depuis l'API. */
+  /** Recharge la liste depuis l’API. */
   loadPatients(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
     this.patientService.getAllPatients().subscribe({
       next: (res) => {
         this.patients = res.data ?? [];
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err: Error) => {
         this.errorMessage = err.message;
         this.patients = [];
         this.isLoading = false;
+        this.toast.error(err.message);
+        this.cdr.markForCheck();
       }
     });
   }
@@ -59,15 +81,15 @@ export class PatientListComponent implements OnInit {
   }
 
   goDetail(id: number): void {
-    void this.router.navigate(['/patients', id]);
+    void this.router.navigate(['/admin/patients', id]);
   }
 
   goEdit(id: number): void {
-    void this.router.navigate(['/patients', id, 'edit']);
+    void this.router.navigate(['/admin/patients', id, 'edit']);
   }
 
   goNew(): void {
-    void this.router.navigate(['/patients', 'new']);
+    void this.router.navigate(['/admin/patients', 'new']);
   }
 
   /** Suppression avec confirmation navigateur. */
@@ -76,9 +98,14 @@ export class PatientListComponent implements OnInit {
       return;
     }
     this.patientService.deletePatient(id).subscribe({
-      next: () => this.loadPatients(),
+      next: () => {
+        this.toast.success('Patient supprimé.');
+        this.loadPatients();
+      },
       error: (err: Error) => {
         this.errorMessage = err.message;
+        this.toast.error(err.message);
+        this.cdr.markForCheck();
       }
     });
   }

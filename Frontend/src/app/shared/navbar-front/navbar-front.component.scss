@@ -1,0 +1,26 @@
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    &.collapse:not(.show) {
+      display: none;
+    }
+    &.collapse.show {
+      display: block;
+    }
+  }
+}
+
+.ehealth-navbar--front {
+  background: linear-gradient(135deg, #1d4ed8 0%, var(--ehealth-primary) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ehealth-navbar--front .navbar-brand,
+.ehealth-navbar--front .nav-link {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.ehealth-navbar--front .nav-link.active {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px;
+}

@@ -10,9 +10,9 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByEmail(String email);
 
-    Optional<Patient> findByTelephone(String telephone);
+    Optional<Patient> findByPhone(String phone);
 
-    List<Patient> findByNomContainingIgnoreCase(String nom);
+    List<Patient> findByLastNameContainingIgnoreCase(String lastName);
 
     boolean existsByEmail(String email);
 }

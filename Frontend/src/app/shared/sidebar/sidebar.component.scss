@@ -1,0 +1,21 @@
+/* BEM: ehealth-sidebar */
+
+.ehealth-sidebar {
+  &__nav {
+    min-width: 220px;
+  }
+
+  .nav-link {
+    border-radius: 10px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+    &:hover:not(.active) {
+      background-color: rgba(37, 99, 235, 0.06);
+      color: var(--ehealth-primary);
+    }
+
+    &.active {
+      font-weight: 600;
+    }
+  }
+}

@@ -1,0 +1,40 @@
+<div class="ehealth-page container-fluid py-3 py-md-4" style="max-width: 960px">
+  <h1 class="ehealth-page__title h3 mb-3">Mes rendez-vous</h1>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2 small mb-0">Chargement…</p>
+  </div>
+
+  <div *ngIf="!loading && errorMessage" class="alert alert-warning">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading && !errorMessage && dossier" class="mb-3">
+    <p class="text-muted small mb-0" *ngIf="dossier.message">{{ dossier.message }}</p>
+  </div>
+
+  <div *ngIf="!loading && !errorMessage && rendezVous.length === 0" class="ehealth-empty border rounded p-4 text-center">
+    <i class="bi bi-calendar-x fs-1 text-muted d-block mb-2" aria-hidden="true"></i>
+    <p class="mb-0">Aucun rendez-vous enregistré pour le moment.</p>
+  </div>
+
+  <div *ngIf="!loading && rendezVous.length > 0" class="table-responsive card border-0 shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Heure</th>
+          <th scope="col">Motif</th>
+          <th scope="col">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rv of rendezVous">
+          <td>{{ rv.date }}</td>
+          <td>{{ rv.heure }}</td>
+          <td>{{ rv.motif }}</td>
+          <td><span class="badge bg-primary-subtle text-primary">{{ rv.statut }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

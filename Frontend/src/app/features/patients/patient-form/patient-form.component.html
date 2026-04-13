@@ -1,5 +1,5 @@
-<div class="container py-3" style="max-width: 640px">
-  <h1 class="h3 text-primary mb-3">{{ isEditMode ? 'Modifier le patient' : 'Nouveau patient' }}</h1>
+<div class="ehealth-page container py-3 py-md-4" style="max-width: 640px">
+  <h1 class="ehealth-page__title h3 mb-3">{{ isEditMode ? 'Modifier le patient' : 'Nouveau patient' }}</h1>
 
   <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>

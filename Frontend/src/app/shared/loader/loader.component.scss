@@ -1,0 +1,9 @@
+/* BEM: ehealth-loader */
+
+.ehealth-loader {
+  &__spinner {
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--ehealth-primary);
+  }
+}

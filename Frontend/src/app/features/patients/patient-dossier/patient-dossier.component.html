@@ -1,12 +1,13 @@
-<div class="container-fluid py-3">
-  <button type="button" class="btn btn-link ps-0 mb-2" (click)="goBack()">
-    <i class="bi bi-arrow-left"></i> Retour
+<div class="ehealth-page container-fluid py-3 py-md-4">
+  <button type="button" class="btn btn-link ps-0 mb-2 text-decoration-none" (click)="goBack()">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i> Retour
   </button>
 
-  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
 
-  <div *ngIf="isLoading" class="text-center py-5">
-    <div class="spinner-border text-primary"></div>
+  <div *ngIf="isLoading" class="ehealth-page__loading text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted small mt-2 mb-0">Chargement du dossier…</p>
   </div>
 
   <div *ngIf="!isLoading && dossier">
@@ -20,8 +21,10 @@
 
     <p class="text-muted small mb-2">{{ dossier.message }}</p>
 
-    <div *ngIf="rendezVous.length === 0" class="alert alert-info">
-      Aucun rendez-vous enregistré pour ce patient.
+    <div *ngIf="rendezVous.length === 0" class="ehealth-empty py-4" role="status">
+      <div class="ehealth-empty__icon"><i class="bi bi-calendar-x" aria-hidden="true"></i></div>
+      <p class="ehealth-empty__title mb-0">Aucun rendez-vous</p>
+      <p class="small mb-0 text-muted">Aucun rendez-vous enregistré pour ce patient.</p>
     </div>
 
     <div *ngIf="rendezVous.length > 0" class="card shadow-sm">
