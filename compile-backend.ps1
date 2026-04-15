@@ -5,6 +5,24 @@
 
 $ErrorActionPreference = "Stop"
 $Root = $PSScriptRoot
+
+# Lombok et Spring Boot 3.2 sont validés en JDK 17. Si JAVA_HOME pointe vers JDK 24+,
+# la compilation peut échouer (Lombok). On préfère JDK 17 lorsqu'il est présent.
+$Jdk17Candidates = @(
+    $env:JAVA_HOME_17
+    "C:\Java\jdk-17.0.17+10"
+)
+foreach ($jdkRoot in $Jdk17Candidates) {
+    if (-not $jdkRoot) { continue }
+    $javac = Join-Path $jdkRoot "bin\javac.exe"
+    if (Test-Path $javac) {
+        $env:JAVA_HOME = $jdkRoot.TrimEnd('\')
+        $env:PATH = "$(Join-Path $jdkRoot 'bin');$env:PATH"
+        Write-Host "JAVA_HOME -> $($env:JAVA_HOME) (JDK 17 pour Maven)" -ForegroundColor DarkGray
+        break
+    }
+}
+
 $Mvnw = Join-Path $Root "Backend\patient-service\mvnw.cmd"
 
 if (-not (Test-Path $Mvnw)) {
