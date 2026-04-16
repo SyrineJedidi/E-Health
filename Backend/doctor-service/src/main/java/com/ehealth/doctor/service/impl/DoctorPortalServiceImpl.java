@@ -5,6 +5,7 @@ import com.ehealth.doctor.client.AppointmentFeignClient;
 import com.ehealth.doctor.client.PrescriptionBriefJson;
 import com.ehealth.doctor.client.PrescriptionServiceClient;
 import com.ehealth.doctor.client.RendezVousBriefJson;
+import com.ehealth.doctor.dto.DoctorCreateRequest;
 import com.ehealth.doctor.dto.DoctorDTO;
 import com.ehealth.doctor.dto.PatientSummaryDTO;
 import com.ehealth.doctor.dto.RendezVousViewDTO;
@@ -12,16 +13,23 @@ import com.ehealth.doctor.model.Doctor;
 import com.ehealth.doctor.client.PatientListResponse;
 import com.ehealth.doctor.client.PatientServiceClient;
 import com.ehealth.doctor.repository.DoctorRepository;
+import com.ehealth.doctor.security.JwtUtil;
 import com.ehealth.doctor.service.DoctorPortalService;
 import com.ehealth.doctor.service.DoctorService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -38,16 +46,23 @@ public class DoctorPortalServiceImpl implements DoctorPortalService {
     private final PrescriptionServiceClient prescriptionServiceClient;
     private final PatientServiceClient patientServiceClient;
     private final AppointmentFeignClient appointmentFeignClient;
+    private final JwtUtil jwtUtil;
+
+    @Value("${ehealth.doctor.portal.auto-provision-doctor:true}")
+    private boolean autoProvisionDoctor;
+
+    @Value("${ehealth.doctor.portal.default-specialty-id:2}")
+    private long defaultSpecialtyId;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public DoctorDTO getCurrentDoctor() {
         Doctor doc = requireCurrentDoctor();
         return doctorService.findById(doc.getId());
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PatientSummaryDTO> getMyPatients() {
         DoctorDTO me = getCurrentDoctor();
         Set<Long> patientIds = new LinkedHashSet<>();
@@ -96,7 +111,7 @@ public class DoctorPortalServiceImpl implements DoctorPortalService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<RendezVousViewDTO> getMyAppointments() {
         DoctorDTO me = getCurrentDoctor();
         try {
@@ -115,14 +130,70 @@ public class DoctorPortalServiceImpl implements DoctorPortalService {
         if (email == null || email.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Non authentifié");
         }
+        String normalized = email.trim();
         return doctorRepository
-                .findByEmailIgnoreCase(email.trim())
-                .orElseThrow(
-                        () ->
-                                new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Aucune fiche médecin pour ce compte. Utilisez le même email que dans"
-                                                + " l’annuaire médecins."));
+                .findByEmailIgnoreCase(normalized)
+                .orElseGet(() -> tryAutoProvisionOrThrow(normalized));
+    }
+
+    private Doctor tryAutoProvisionOrThrow(String normalizedEmail) {
+        if (!autoProvisionDoctor) {
+            throw portalNotFound(normalizedEmail);
+        }
+        String token = bearerTokenFromRequest();
+        String role = token != null ? jwtUtil.extractRole(token) : null;
+        if (role == null || !"DOCTOR".equalsIgnoreCase(role.trim())) {
+            throw portalNotFound(normalizedEmail);
+        }
+        DoctorCreateRequest req = bootstrapRequest(normalizedEmail);
+        doctorService.create(req);
+        return doctorRepository
+                .findByEmailIgnoreCase(normalizedEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fiche médecin non créée."));
+    }
+
+    private static ResponseStatusException portalNotFound(String normalizedEmail) {
+        return new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Aucune fiche médecin pour ce compte. Utilisez le même email que dans l’annuaire (GET /api/doctors),"
+                        + " enregistrez-vous en tant que DOCTOR avec cet email, ou laissez"
+                        + " ehealth.doctor.portal.auto-provision-doctor=true pour une fiche auto si le JWT indique DOCTOR."
+                        + " (email JWT : « "
+                        + normalizedEmail
+                        + " »)");
+    }
+
+    private DoctorCreateRequest bootstrapRequest(String email) {
+        DoctorCreateRequest r = new DoctorCreateRequest();
+        r.setEmail(email);
+        r.setSpecialtyId(defaultSpecialtyId);
+        int at = email.indexOf('@');
+        String local = at > 0 ? email.substring(0, at) : email;
+        String[] parts = local.split("[._\\-]+");
+        r.setPrenom(capitalizeWord(parts.length > 0 ? parts[0] : "Médecin"));
+        r.setNom(capitalizeWord(parts.length > 1 ? parts[1] : "Portail"));
+        r.setDepartment("À compléter");
+        return r;
+    }
+
+    private static String capitalizeWord(String s) {
+        if (s == null || s.isEmpty()) {
+            return s;
+        }
+        return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
+    }
+
+    private static String bearerTokenFromRequest() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            return null;
+        }
+        HttpServletRequest request = attrs.getRequest();
+        String h = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (h != null && h.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return h.substring(7).trim();
+        }
+        return null;
     }
 
     private RendezVousViewDTO toRendezVousView(RendezVousBriefJson a) {

@@ -23,23 +23,33 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     List<Doctor> findByNomContainingIgnoreCase(String keyword);
 
     @Query(
-            "select distinct d from Doctor d join fetch d.specialty where lower(d.nom) like"
-                    + " lower(concat('%', :kw, '%')) order by d.nom, d.prenom")
+            "select distinct d from Doctor d join fetch d.specialty left join fetch d.availabilities where"
+                    + " lower(d.nom) like lower(concat('%', :kw, '%')) order by d.nom, d.prenom")
     List<Doctor> searchByNomContainingWithSpecialty(@Param("kw") String keyword);
 
-    @Query("select distinct d from Doctor d join fetch d.specialty where d.specialty.id = :sid order by d.nom, d.prenom")
+    @Query(
+            "select distinct d from Doctor d join fetch d.specialty left join fetch d.availabilities where"
+                    + " d.specialty.id = :sid order by d.nom, d.prenom")
     List<Doctor> findBySpecialtyIdWithSpecialty(@Param("sid") Long specialtyId);
 
-    @Query("select distinct d from Doctor d join fetch d.specialty where lower(d.department) = lower(:dept) order by d.nom, d.prenom")
+    @Query(
+            "select distinct d from Doctor d join fetch d.specialty left join fetch d.availabilities where"
+                    + " lower(d.department) = lower(:dept) order by d.nom, d.prenom")
     List<Doctor> findByDepartmentWithSpecialty(@Param("dept") String department);
 
-    @Query("select distinct d from Doctor d join fetch d.specialty where d.active = :active order by d.nom, d.prenom")
+    @Query(
+            "select distinct d from Doctor d join fetch d.specialty left join fetch d.availabilities where"
+                    + " d.active = :active order by d.nom, d.prenom")
     List<Doctor> findByActiveWithSpecialty(@Param("active") boolean active);
 
-    @Query("select distinct d from Doctor d join fetch d.specialty order by d.nom, d.prenom")
+    @Query(
+            "select distinct d from Doctor d join fetch d.specialty left join fetch d.availabilities order by d.nom,"
+                    + " d.prenom")
     List<Doctor> findAllWithSpecialty();
 
-    @Query("select distinct d from Doctor d join fetch d.specialty where d.id = :id")
+    @Query(
+            "select distinct d from Doctor d join fetch d.specialty left join fetch d.availabilities where d.id ="
+                    + " :id")
     Optional<Doctor> findByIdWithSpecialty(@Param("id") Long id);
 
     Optional<Doctor> findByEmailIgnoreCase(String email);

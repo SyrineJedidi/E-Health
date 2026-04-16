@@ -1,0 +1,13 @@
+# Broker RabbitMQ pour les scénarios asynchrones entre microservices (OpenFeign reste séparé).
+# Ports hôte 5673 / 15673 : évite le conflit si un autre RabbitMQ occupe déjà 5672 sur la machine.
+# Démarrage : docker compose up -d
+# UI : http://localhost:15673 (guest / guest) — AMQP côté apps : localhost:5673
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest

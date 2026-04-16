@@ -17,11 +17,14 @@ import com.ehealth.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -76,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse me(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        User user = resolveCurrentUser(authentication);
         return toAuthResponse(user, null);
     }
 
@@ -124,15 +127,43 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void changePassword(Authentication authentication, ChangePasswordRequest request) {
-        User user = (User) authentication.getPrincipal();
-        User fresh = userRepository
-                .findByEmail(user.getEmail())
-                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        User fresh = resolveCurrentUser(authentication);
         if (!passwordEncoder.matches(request.getCurrentPassword(), fresh.getPassword())) {
             throw new WrongPasswordException("Le mot de passe actuel est incorrect.");
         }
         fresh.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(fresh);
+    }
+
+    @Override
+    public void deleteMyAccount(Authentication authentication) {
+        User user = resolveCurrentUser(authentication);
+        userRepository.deleteById(user.getId());
+        log.info("Compte supprimé : {}", user.getEmail());
+    }
+
+    /**
+     * Recharge l’utilisateur depuis Mongo par email (normalisé comme au login/register).
+     * Évite le cast direct {@code (User) getPrincipal()} qui peut échouer selon le type réel du principal.
+     */
+    private User resolveCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Non authentifié");
+        }
+        String email = extractEmail(authentication.getPrincipal());
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+    }
+
+    private static String extractEmail(Object principal) {
+        if (principal instanceof User u && u.getEmail() != null) {
+            return u.getEmail().trim().toLowerCase();
+        }
+        if (principal instanceof UserDetails ud && ud.getUsername() != null) {
+            return ud.getUsername().trim().toLowerCase();
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session invalide");
     }
 
     private static AuthResponse toAuthResponse(User user, String token) {

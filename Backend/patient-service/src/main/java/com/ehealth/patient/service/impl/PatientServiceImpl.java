@@ -7,6 +7,11 @@ import com.ehealth.patient.dto.RendezVousDTO;
 import com.ehealth.patient.exception.EmailAlreadyExistsException;
 import com.ehealth.patient.exception.PatientNotFoundException;
 import com.ehealth.patient.exception.ResourceNotFoundException;
+import com.ehealth.patient.messaging.PatientProfileUpdatedEvent;
+import com.ehealth.patient.messaging.PatientProfileUpdatedEventPublisher;
+import com.ehealth.patient.messaging.PatientRegisteredEvent;
+import com.ehealth.patient.messaging.PatientRegisteredEventPublisher;
+import com.ehealth.patient.model.Gender;
 import com.ehealth.patient.model.Patient;
 import com.ehealth.patient.repository.PatientRepository;
 import com.ehealth.patient.service.PatientService;
@@ -15,8 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +37,8 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
     private final AppointmentClient appointmentClient;
+    private final PatientRegisteredEventPublisher patientRegisteredEventPublisher;
+    private final PatientProfileUpdatedEventPublisher patientProfileUpdatedEventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,15 +75,32 @@ public class PatientServiceImpl implements PatientService {
         }
         Patient entity = fromDto(dto);
         Patient saved = patientRepository.save(entity);
+        patientRegisteredEventPublisher.publish(
+                new PatientRegisteredEvent(
+                        saved.getId(),
+                        saved.getEmail(),
+                        saved.getFirstName(),
+                        saved.getLastName(),
+                        Instant.now()));
         return toDto(saved);
     }
 
     @Override
-    public PatientDTO updatePatient(Long id, PatientDTO dto) {
+    public PatientDTO updatePatient(Long id, PatientDTO dto, String profileChangeInitiator) {
         log.info("Mise à jour du patient id={}", id);
         Patient patient = patientRepository
                 .findById(id)
                 .orElseThrow(() -> new PatientNotFoundException(id));
+        String prevNom = patient.getFirstName();
+        String prevPrenom = patient.getLastName();
+        String prevEmail = patient.getEmail();
+        String prevPhone = patient.getPhone();
+        String prevAddr = patient.getAddress();
+        String prevBlood = patient.getBloodType();
+        String prevHistory = patient.getMedicalHistory();
+        LocalDate prevDob = patient.getDateOfBirth();
+        Gender prevGender = patient.getGender();
+
         if (dto.getNom() != null) {
             patient.setFirstName(dto.getNom());
         }
@@ -102,7 +131,64 @@ public class PatientServiceImpl implements PatientService {
         if (dto.getMedicalHistory() != null) {
             patient.setMedicalHistory(dto.getMedicalHistory());
         }
-        return toDto(patientRepository.save(patient));
+        Patient saved = patientRepository.save(patient);
+
+        List<String> changed = new ArrayList<>();
+        if (dto.getNom() != null && !Objects.equals(prevNom, saved.getFirstName())) {
+            changed.add("nom");
+        }
+        if (dto.getPrenom() != null && !Objects.equals(prevPrenom, saved.getLastName())) {
+            changed.add("prenom");
+        }
+        if (dto.getEmail() != null && !Objects.equals(prevEmail, saved.getEmail())) {
+            changed.add("email");
+        }
+        if (dto.getTelephone() != null && !Objects.equals(prevPhone, saved.getPhone())) {
+            changed.add("telephone");
+        }
+        if (dto.getAdresse() != null && !Objects.equals(prevAddr, saved.getAddress())) {
+            changed.add("adresse");
+        }
+        if (dto.getDateNaissance() != null && !Objects.equals(prevDob, saved.getDateOfBirth())) {
+            changed.add("dateNaissance");
+        }
+        if (dto.getGroupeSanguin() != null && !Objects.equals(prevBlood, saved.getBloodType())) {
+            changed.add("groupeSanguin");
+        }
+        if (dto.getGender() != null && !Objects.equals(prevGender, saved.getGender())) {
+            changed.add("sexe");
+        }
+        if (dto.getMedicalHistory() != null && !Objects.equals(prevHistory, saved.getMedicalHistory())) {
+            changed.add("antecedents");
+        }
+
+        // Toujours publier après un PUT réussi : si le corps JSON reprend les mêmes valeurs qu’en base,
+        // « changed » est vide — avant on n’envoyait rien et l’audit doctor restait vide.
+        List<String> changedForEvent =
+                changed.isEmpty() ? List.of("aucune_modification_detectee") : changed;
+        String alert =
+                changed.stream().anyMatch(a -> a.equals("antecedents") || a.equals("groupeSanguin"))
+                        ? "VIGILANCE_CLINIQUE"
+                        : "MISE_A_JOUR_ROUTINE";
+        String initiator =
+                profileChangeInitiator != null && !profileChangeInitiator.isBlank()
+                        ? profileChangeInitiator.trim()
+                        : "UNKNOWN";
+        patientProfileUpdatedEventPublisher.publish(
+                new PatientProfileUpdatedEvent(
+                        saved.getId(),
+                        saved.getEmail(),
+                        saved.getFirstName(),
+                        saved.getLastName(),
+                        "PROFILE_UPDATED",
+                        changedForEvent,
+                        alert,
+                        Instant.now(),
+                        "patient-service",
+                        initiator,
+                        UUID.randomUUID().toString()));
+
+        return toDto(saved);
     }
 
     @Override

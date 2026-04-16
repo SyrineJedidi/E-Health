@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 @Slf4j
@@ -51,6 +52,13 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .orElse("Données invalides");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(msg));
+    }
+
+    /** Ex. portail /me : 404 si aucun médecin pour l’email du JWT (évite un 500 générique). */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatus(ResponseStatusException ex) {
+        String msg = ex.getReason() != null ? ex.getReason() : "Erreur";
+        return ResponseEntity.status(ex.getStatusCode()).body(ApiResponse.error(msg));
     }
 
     @ExceptionHandler(Exception.class)

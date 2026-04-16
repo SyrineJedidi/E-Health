@@ -1,0 +1,386 @@
+{
+  "info": {
+    "_postman_id": "ehealth-doctor-scenario-2026",
+    "name": "E-Health — Doctor (scénario complet sujet)",
+    "description": "Couverture du sujet : microservice Doctor (CRUD + métier), Eureka, API Gateway, OpenFeign, RabbitMQ. Tests uniquement Postman (pas de front).\n\n**Ordre conseillé** : 0 → Login (1) → JWT → CRUD (2–5) → Métier (6) → OpenFeign (7) → Portail (8) → Gateway (9) → RabbitMQ (10) → Santé (11).\n\n**Ports** : doctor `8086`, patient `8091`, auth `8088`, gateway `8085`, eureka `8761`, RabbitMQ AMQP `5673`, UI `http://localhost:15673`.\n\n**OpenFeign** : S1 liste patients déléguée ; S2 RDV /me ; bonus `/me/patients`.\n\n**RabbitMQ** : (A) médecin créé/mis à jour → patient-service ; (B) inscription patient → doctor-service ; **(C) scénario pro** : mise à jour dossier patient (PUT) → événement structuré + audit persisté côté doctor (`GET /api/doctors/sync/patient-profile-events`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8086", "type": "string" },
+    { "key": "baseAuth", "value": "http://localhost:8088", "type": "string" },
+    { "key": "baseGateway", "value": "http://localhost:8085", "type": "string" },
+    { "key": "baseEureka", "value": "http://localhost:8761", "type": "string" },
+    { "key": "basePatient", "value": "http://localhost:8091", "type": "string" },
+    { "key": "rabbitManagementUrl", "value": "http://localhost:15673", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "doctorId", "value": "1", "type": "string" },
+    { "key": "specialtyId", "value": "1", "type": "string" },
+    { "key": "availabilityId", "value": "1", "type": "string" },
+    { "key": "patientId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "0 — Préambule (Eureka + santé)",
+      "description": "Démarrer **eureka-server**, **doctor-service**, services distants utilisés plus tard (**patient-service**, **appointment-service**, **prescription-service** pour le portail), **api-gateway**, **auth-service**. Rabbit : `docker compose up -d` dans `Backend/`.",
+      "item": [
+        {
+          "name": "Eureka — applications (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{baseEureka}}/eureka/apps", "protocol": "http", "host": ["localhost"], "port": "8761", "path": ["eureka", "apps"] }
+          }
+        },
+        {
+          "name": "Doctor — actuator /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/actuator/health", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "Patient — actuator /health (pour Feign)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{basePatient}}/actuator/health", "protocol": "http", "host": ["localhost"], "port": "8091", "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "RabbitMQ — UI management (ouvrir dans le navigateur)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "http://localhost:15673/", "protocol": "http", "host": ["localhost"], "port": "15673", "path": [""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 — Authentification (auth-service)",
+      "description": "Le **Login** enregistre `{{token}}` pour les routes JWT. Pour `/me` et OpenFeign portail : email = un médecin connu (`GET /api/doctors`) ou compte DOCTOR + auto-provision.",
+      "item": [
+        {
+          "name": "Register (DOCTOR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"claire.bernard@ehealth.local\",\n  \"password\": \"password12\",\n  \"firstName\": \"Claire\",\n  \"lastName\": \"Bernard\",\n  \"role\": \"DOCTOR\"\n}"
+            },
+            "url": { "raw": "{{baseAuth}}/api/auth/register", "protocol": "http", "host": ["localhost"], "port": "8088", "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Login (sauvegarde le token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "try { var j = pm.response.json(); if (j.token) pm.collectionVariables.set('token', j.token); } catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"claire.bernard@ehealth.local\",\n  \"password\": \"password12\"\n}"
+            },
+            "url": { "raw": "{{baseAuth}}/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "8088", "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Supprimer mon compte (optionnel)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "url": { "raw": "{{baseAuth}}/api/auth/account", "protocol": "http", "host": ["localhost"], "port": "8088", "path": ["api", "auth", "account"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 — Spécialités (CRUD)",
+      "description": "Bearer `{{token}}`. Code spécialité unique à chaque POST.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Liste",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/specialties", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "specialties"] } }
+        },
+        {
+          "name": "Détail par id",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/specialties/{{specialtyId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "specialties", "{{specialtyId}}"] } }
+        },
+        {
+          "name": "Créer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"SPEC_DEMO_POSTMAN\",\n  \"label\": \"Spécialité démo\",\n  \"description\": \"CRUD sujet\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/specialties", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "specialties"] }
+          }
+        },
+        {
+          "name": "Modifier",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"SPEC_DEMO_POSTMAN\",\n  \"label\": \"Libellé mis à jour\",\n  \"description\": \"maj\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/specialties/{{specialtyId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "specialties", "{{specialtyId}}"] }
+          }
+        },
+        {
+          "name": "Supprimer",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/specialties/{{specialtyId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "specialties", "{{specialtyId}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "3 — Médecins (CRUD)",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Liste",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors"] } }
+        },
+        {
+          "name": "Détail par id",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}"] } }
+        },
+        {
+          "name": "Créer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Dupont\",\n  \"prenom\": \"Jean\",\n  \"email\": \"jean.dupont.demo@ehealth.local\",\n  \"specialtyId\": 1,\n  \"telephone\": \"0600000000\",\n  \"service\": \"Consultations\",\n  \"department\": \"Médecine générale\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/doctors", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors"] }
+          }
+        },
+        {
+          "name": "Modifier",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"telephone\": \"0611111111\",\n  \"active\": true\n}" },
+            "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}"] }
+          }
+        },
+        {
+          "name": "Supprimer",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "4 — Disponibilités CRUD (/api/doctors/{id}/availabilities)",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Liste",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}/availabilities", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}", "availabilities"] } }
+        },
+        {
+          "name": "Créer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dayOfWeek\": \"WEDNESDAY\",\n  \"heureDebut\": \"09:00:00\",\n  \"heureFin\": \"12:00:00\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}/availabilities", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}", "availabilities"] }
+          }
+        },
+        {
+          "name": "Modifier",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dayOfWeek\": \"WEDNESDAY\",\n  \"heureDebut\": \"10:00:00\",\n  \"heureFin\": \"12:00:00\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}/availabilities/{{availabilityId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}", "availabilities", "{{availabilityId}}"] }
+          }
+        },
+        {
+          "name": "Supprimer",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/{{doctorId}}/availabilities/{{availabilityId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "{{doctorId}}", "availabilities", "{{availabilityId}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "5 — Disponibilités (route alternative /api/availabilities)",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Liste par médecin",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/availabilities/doctor/{{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "availabilities", "doctor", "{{doctorId}}"] } }
+        },
+        {
+          "name": "Créer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dayOfWeek\": \"THURSDAY\",\n  \"heureDebut\": \"14:00:00\",\n  \"heureFin\": \"18:00:00\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/availabilities/doctor/{{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "availabilities", "doctor", "{{doctorId}}"] }
+          }
+        },
+        {
+          "name": "Modifier (query doctorId)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dayOfWeek\": \"THURSDAY\",\n  \"heureDebut\": \"15:00:00\",\n  \"heureFin\": \"18:00:00\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/availabilities/{{availabilityId}}?doctorId={{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "availabilities", "{{availabilityId}}"], "query": [{ "key": "doctorId", "value": "{{doctorId}}" }] }
+          }
+        },
+        {
+          "name": "Supprimer (query doctorId)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/availabilities/{{availabilityId}}?doctorId={{doctorId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "availabilities", "{{availabilityId}}"], "query": [{ "key": "doctorId", "value": "{{doctorId}}" }] } }
+        }
+      ]
+    },
+    {
+      "name": "6 — Métier (recherche & filtres)",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Recherche ?q=",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/doctors/search?q=Bernard", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "search"], "query": [{ "key": "q", "value": "Bernard" }] }
+          }
+        },
+        {
+          "name": "Par spécialité",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/specialty/{{specialtyId}}", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "specialty", "{{specialtyId}}"] } }
+        },
+        {
+          "name": "Par service (department)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/department/Cardiologie", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "department", "Cardiologie"] } }
+        }
+      ]
+    },
+    {
+      "name": "7 — OpenFeign : 2 scénarios (autre microservice)",
+      "description": "**Scénario 1** — `GET /api/doctors/patients` : le doctor-service appelle **patient-service** (Feign) pour lister les patients.\n\n**Scénario 2** — `GET /api/doctors/me/rendez-vous` : appels Feign vers **appointment-service** (liste des RDV du médecin connecté).\n\n**Bonus** — `GET /api/doctors/me/patients` : agrégation **prescription-service** + **patient-service**.\n\nPrérequis : services enregistrés sur Eureka ; JWT = email d’un médecin existant.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "S1 — Feign → patient-service (liste patients)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/patients", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "patients"] } }
+        },
+        {
+          "name": "S2 — Feign → appointment-service (mes RDV /me)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/me/rendez-vous", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "me", "rendez-vous"] } }
+        },
+        {
+          "name": "Bonus — Feign prescription + patient (/me/patients)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/me/patients", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "me", "patients"] } }
+        }
+      ]
+    },
+    {
+      "name": "8 — Portail médecin (profil /me)",
+      "description": "JWT.sub = email présent dans la table médecins (ou auto-provision DOCTOR).",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Mon profil",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/doctors/me", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "me"] } }
+        }
+      ]
+    },
+    {
+      "name": "9 — API Gateway (routage)",
+      "description": "Même API doctor derrière le port **8085**. Eureka + gateway démarrés.",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Health gateway",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseGateway}}/actuator/health", "protocol": "http", "host": ["localhost"], "port": "8085", "path": ["actuator", "health"] } }
+        },
+        {
+          "name": "Liste médecins via gateway",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseGateway}}/api/doctors", "protocol": "http", "host": ["localhost"], "port": "8085", "path": ["api", "doctors"] } }
+        },
+        {
+          "name": "Liste spécialités via gateway",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseGateway}}/api/specialties", "protocol": "http", "host": ["localhost"], "port": "8085", "path": ["api", "specialties"] } }
+        },
+        {
+          "name": "Feign S1 via gateway (patients délégués)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseGateway}}/api/doctors/patients", "protocol": "http", "host": ["localhost"], "port": "8085", "path": ["api", "doctors", "patients"] } }
+        }
+      ]
+    },
+    {
+      "name": "10 — RabbitMQ (A, B + scénario pro C)",
+      "description": "Broker **localhost:5673** (UI **{{rabbitManagementUrl}}**). `docker compose up -d` dans `Backend/`.\n\n• **A** — cycle annuaire médecin → **patient-service** (log événement médecin).\n• **B** — **inscription** patient → **doctor-service** (log inscription).\n• **C — dossier patient (pro)** : `PUT` sur une fiche patient modifie des champs → message **`patient.profile.updated`** (liste des champs, `correlationId`, niveau `VIGILANCE_CLINIQUE` si antécédents/groupe sanguin). Côté doctor : log + **table d’audit** ; lecture via **GET sync/patient-profile-events**.\n\nPour **C** : régler `{{patientId}}` (ex. `1` ou id issu d’un GET liste patients).",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "A — POST médecin (événement vers patient-service)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Rabbit\",\n  \"prenom\": \"Demo\",\n  \"email\": \"rabbit.demo.doctor@ehealth.local\",\n  \"specialtyId\": 1,\n  \"telephone\": \"0600000000\",\n  \"service\": \"MQ\",\n  \"department\": \"Tests\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/doctors", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors"] }
+          }
+        },
+        {
+          "name": "B — POST patient (événement vers doctor-service)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"MqPatient\",\n  \"prenom\": \"Async\",\n  \"email\": \"rabbit.demo.patient@ehealth.local\",\n  \"telephone\": \"0611111111\",\n  \"adresse\": \"1 rue Test\",\n  \"dateNaissance\": \"1990-01-15\",\n  \"groupeSanguin\": \"A+\",\n  \"gender\": \"MALE\"\n}"
+            },
+            "url": { "raw": "{{basePatient}}/api/patients", "protocol": "http", "host": ["localhost"], "port": "8091", "path": ["api", "patients"] }
+          }
+        },
+        {
+          "name": "C — PUT patient (mise à jour dossier → événement pro)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Bernard\",\n  \"prenom\": \"Claire\",\n  \"email\": \"claire.bernard.patient@ehealth.local\",\n  \"telephone\": \"0699887766\",\n  \"adresse\": \"10 avenue Santé, Paris\",\n  \"dateNaissance\": \"1985-06-20\",\n  \"groupeSanguin\": \"O+\",\n  \"gender\": \"FEMALE\",\n  \"medicalHistory\": \"Allergie pénicilline — suivi cardiologique 2024\"\n}"
+            },
+            "url": { "raw": "{{basePatient}}/api/patients/{{patientId}}", "protocol": "http", "host": ["localhost"], "port": "8091", "path": ["api", "patients", "{{patientId}}"] }
+          }
+        },
+        {
+          "name": "C — GET audit sync (doctor, après C)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/doctors/sync/patient-profile-events", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["api", "doctors", "sync", "patient-profile-events"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 — Santé doctor (rappel)",
+      "item": [
+        {
+          "name": "Actuator health",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/actuator/health", "protocol": "http", "host": ["localhost"], "port": "8086", "path": ["actuator", "health"] } }
+        }
+      ]
+    }
+  ]
+}

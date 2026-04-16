@@ -26,6 +26,16 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
+    /** Claim {@code role} émis par auth-service : PATIENT, DOCTOR, ADMIN. */
+    public String extractRole(String token) {
+        return extractClaim(
+                token,
+                claims -> {
+                    Object r = claims.get("role");
+                    return r != null ? r.toString() : null;
+                });
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);

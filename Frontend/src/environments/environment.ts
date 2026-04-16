@@ -2,7 +2,7 @@
  * Développement : URLs relatives + proxy (voir proxy.conf.js).
  * Par défaut tout /api/* → API Gateway (proxy → http://localhost:8085 si 8080 occupé).
  * Démarrer au minimum : eureka-server, patient-service, api-gateway.
- * Option direct patient sans gateway : EHEALTH_API_PROXY=http://localhost:8081 npm start
+ * Option direct patient sans gateway : EHEALTH_API_PROXY=http://localhost:8091 npm start
  */
 export const environment = {
   production: false,

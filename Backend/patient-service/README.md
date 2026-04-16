@@ -31,7 +31,7 @@ Microservice **Patient** de la plateforme hospitalière **eHealth**. Il expose u
 
 Sous Linux ou macOS : `./mvnw spring-boot:run`
 
-Le service écoute sur le port **8081** et s’enregistre sur Eureka.
+Le service écoute sur le port **8091** par défaut (`SERVER_PORT` pour surcharger) et s’enregistre sur Eureka.
 
 ### Sans Eureka (local / tests)
 
@@ -51,11 +51,11 @@ Aucune action requise : `spring.config.import` pointe vers un config server **op
 
 | Ressource        | URL |
 |------------------|-----|
-| API              | `http://localhost:8081` |
-| Console H2       | `http://localhost:8081/h2-console` (JDBC URL : `jdbc:h2:mem:patientdb`, user `sa`, mot de passe vide) |
-| OpenAPI (JSON)   | `http://localhost:8081/v3/api-docs` |
-| Swagger UI       | `http://localhost:8081/swagger-ui.html` |
-| Actuator health  | `http://localhost:8081/actuator/health` |
+| API              | `http://localhost:8091` |
+| Console H2       | `http://localhost:8091/h2-console` (JDBC URL : `jdbc:h2:mem:patientdb`, user `sa`, mot de passe vide) |
+| OpenAPI (JSON)   | `http://localhost:8091/v3/api-docs` |
+| Swagger UI       | `http://localhost:8091/swagger-ui.html` |
+| Actuator health  | `http://localhost:8091/actuator/health` |
 
 ## Endpoints REST
 

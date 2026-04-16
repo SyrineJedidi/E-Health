@@ -41,6 +41,21 @@ public class PatientLookupServiceImpl implements PatientLookupService {
         } catch (FeignException e) {
             log.error("Erreur Feign vers patient-service : {}", e.status(), e);
             throw new IllegalStateException("Service patients temporairement indisponible.");
+        } catch (Exception e) {
+            // Load balancer sans instance, connexion refusée, décodage JSON, etc. (souvent pas un FeignException)
+            log.error("Erreur appel patient-service", e);
+            Throwable root = e;
+            while (root.getCause() != null && root.getCause() != root) {
+                root = root.getCause();
+            }
+            String detail = root.getMessage();
+            if (detail == null || detail.isBlank()) {
+                detail = root.getClass().getSimpleName();
+            }
+            throw new IllegalStateException(
+                    "Impossible de joindre patient-service : "
+                            + detail
+                            + ". Vérifiez Eureka (8761), que PATIENT-SERVICE est enregistré, puis redémarrez doctor-service si besoin.");
         }
     }
 }

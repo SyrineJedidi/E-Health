@@ -1,7 +1,7 @@
-# Port par défaut 8080. Si occupé : PowerShell → $env:SERVER_PORT=8085 puis relancer la gateway
-# (et aligner Frontend environment.apiGatewayUrl sur le même port).
+# Port par défaut 8085 (8080 est souvent utilisé).
+# Tu peux toujours surcharger via la variable d'env `SERVER_PORT`.
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8085}
 spring:
   application:
     name: api-gateway
@@ -12,6 +12,11 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        # Swagger / OpenAPI du doctor-service (accès direct : http://localhost:8086/swagger-ui.html)
+        - id: doctor-service-swagger
+          uri: lb://doctor-service
+          predicates:
+            - Path=/swagger-ui.html,/swagger-ui/**,/v3/api-docs,/v3/api-docs/**,/webjars/**
         - id: patient-service
           uri: lb://patient-service
           predicates:
@@ -20,10 +25,6 @@ spring:
           uri: lb://doctor-service
           predicates:
             - Path=/api/specialties/**
-        - id: doctor-availabilities-alt
-          uri: lb://doctor-service
-          predicates:
-            - Path=/api/availabilities/**
         - id: doctor-service
           uri: lb://doctor-service
           predicates:

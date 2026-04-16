@@ -1,9 +1,12 @@
 package com.ehealth.doctor.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class DoctorCreateRequest {
@@ -29,4 +32,7 @@ public class DoctorCreateRequest {
     private String registrationNumber;
 
     private String department;
+
+    /** Créneaux rattachés au médecin (même payload que l’ancienne API disponibilités). */
+    private List<@Valid AvailabilityRequest> availabilities;
 }

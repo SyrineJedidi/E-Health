@@ -1,0 +1,256 @@
+{
+  "info": {
+    "_postman_id": "ehealth-doctor-gateway-simple-v2",
+    "name": "eHealth Doctor — Gateway simple",
+    "description": "## eHealth — Doctor via API Gateway (8085)\n\nImporter ce fichier dans Postman (Import).\n\n### Prérequis\n- Eureka 8761, api-gateway 8085, auth-service, doctor-service, patient-service\n- RabbitMQ (dossier 5) : docker compose dans Backend/ — AMQP 5673\n\n### API actuelle\n- Spécialités : GET uniquement (référentiel specialtyId).\n- Disponibilités : dans le JSON médecin, champ availabilities sur POST/PUT /api/doctors.\n- Routes via {{baseGateway}}.\n\n### Token\nDossier 1 — Login : le script remplit la variable token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseGateway", "value": "http://localhost:8085", "type": "string" },
+    { "key": "baseEureka", "value": "http://localhost:8761", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "doctorId", "value": "1", "type": "string" },
+    { "key": "specialtyId", "value": "1", "type": "string" },
+    { "key": "patientId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1 — Login (JWT)",
+      "description": "Exécuter **Login** en premier : la variable **`token`** est remplie automatiquement.",
+      "item": [
+        {
+          "name": "POST Login → enregistre le token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "try {",
+                  "  var j = pm.response.json();",
+                  "  if (j.token) { pm.collectionVariables.set('token', j.token); }",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"claire.bernard@ehealth.local\",\n  \"password\": \"password12\"\n}"
+            },
+            "url": "{{baseGateway}}/api/auth/login",
+            "description": "Adapter email/mot de passe à ton compte. Réponse : `token`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 — Spécialités (GET seulement)",
+      "description": "Référentiel pour **`specialtyId`** dans le corps médecin. Pas de création / suppression via API.",
+      "item": [
+        {
+          "name": "GET liste des spécialités",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/specialties"
+          }
+        },
+        {
+          "name": "GET spécialité par id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/specialties/{{specialtyId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 — Médecins (CRUD)",
+      "description": "Champ optionnel **`availabilities`** : tableau de créneaux (`dayOfWeek`, `heureDebut`, `heureFin`). Sur **PUT**, si `availabilities` est présent (y compris `[]`), il **remplace** tous les créneaux.",
+      "item": [
+        {
+          "name": "GET tous les médecins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors"
+          }
+        },
+        {
+          "name": "GET médecin par id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/{{doctorId}}"
+          }
+        },
+        {
+          "name": "POST créer médecin (+ créneaux optionnels)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Demo\",\n  \"prenom\": \"Postman\",\n  \"email\": \"postman.demo.med@ehealth.local\",\n  \"specialtyId\": 1,\n  \"telephone\": \"0600000000\",\n  \"service\": \"Consultations\",\n  \"department\": \"Médecine générale\",\n  \"availabilities\": [\n    {\n      \"dayOfWeek\": \"MONDAY\",\n      \"heureDebut\": \"09:00:00\",\n      \"heureFin\": \"12:00:00\"\n    },\n    {\n      \"dayOfWeek\": \"MONDAY\",\n      \"heureDebut\": \"14:00:00\",\n      \"heureFin\": \"18:00:00\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseGateway}}/api/doctors"
+          }
+        },
+        {
+          "name": "PUT mettre à jour médecin",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telephone\": \"0611223344\",\n  \"service\": \"Service mis à jour\"\n}"
+            },
+            "url": "{{baseGateway}}/api/doctors/{{doctorId}}"
+          }
+        },
+        {
+          "name": "PUT remplacer uniquement les créneaux",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availabilities\": [\n    {\n      \"dayOfWeek\": \"TUESDAY\",\n      \"heureDebut\": \"10:00:00\",\n      \"heureFin\": \"13:00:00\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseGateway}}/api/doctors/{{doctorId}}",
+            "description": "Liste complète des créneaux souhaités ; les anciens sont remplacés."
+          }
+        },
+        {
+          "name": "DELETE médecin",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/{{doctorId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 — Métier (recherche + Feign)",
+      "description": "Le doctor-service appelle d’autres microservices (liste patients, RDV…).",
+      "item": [
+        {
+          "name": "GET recherche médecins ?q=",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/search?q=Bernard"
+          }
+        },
+        {
+          "name": "GET patients (Feign → patient-service)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/patients"
+          }
+        },
+        {
+          "name": "GET médecin connecté /me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/me"
+          }
+        },
+        {
+          "name": "GET /me/patients (Feign)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/me/patients"
+          }
+        },
+        {
+          "name": "GET /me/rendez-vous (Feign, RDV)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/me/rendez-vous",
+            "description": "Nécessite **appointment-service**."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 — RabbitMQ (async)",
+      "description": "Broker **5673**. Vérifier les **logs** des services.\n- **A** : POST médecin → événement vers patient.\n- **B** : POST patient → événement vers doctor.\n- **C** : PUT patient puis GET audit.",
+      "item": [
+        {
+          "name": "A — POST médecin (événement doctor → patient)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Rabbit\",\n  \"prenom\": \"Test\",\n  \"email\": \"rabbit.test.doctor@ehealth.local\",\n  \"specialtyId\": 1,\n  \"telephone\": \"0600000000\",\n  \"service\": \"MQ\",\n  \"department\": \"Tests\"\n}"
+            },
+            "url": "{{baseGateway}}/api/doctors"
+          }
+        },
+        {
+          "name": "B — POST patient (événement patient → doctor)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Mq\",\n  \"prenom\": \"Patient\",\n  \"email\": \"rabbit.test.patient@ehealth.local\",\n  \"telephone\": \"0611111111\",\n  \"adresse\": \"1 rue Test\",\n  \"dateNaissance\": \"1990-05-10\",\n  \"groupeSanguin\": \"A+\",\n  \"gender\": \"MALE\"\n}"
+            },
+            "url": "{{baseGateway}}/api/patients"
+          }
+        },
+        {
+          "name": "C — PUT patient (profil)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Bernard\",\n  \"prenom\": \"Claire\",\n  \"email\": \"claire.bernard.patient@ehealth.local\",\n  \"telephone\": \"0699887766\",\n  \"adresse\": \"10 avenue Santé\",\n  \"dateNaissance\": \"1985-06-20\",\n  \"groupeSanguin\": \"O+\",\n  \"gender\": \"FEMALE\",\n  \"medicalHistory\": \"Allergie pénicilline\"\n}"
+            },
+            "url": "{{baseGateway}}/api/patients/{{patientId}}"
+          }
+        },
+        {
+          "name": "C — GET audit événements profil (doctor)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/doctors/sync/patient-profile-events"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 — Eureka (optionnel)",
+      "item": [
+        {
+          "name": "GET applications",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseEureka}}/eureka/apps"
+          }
+        }
+      ]
+    }
+  ]
+}

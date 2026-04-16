@@ -22,4 +22,7 @@ public interface AuthService {
     void resetPassword(ResetPasswordRequest request);
 
     void changePassword(Authentication authentication, ChangePasswordRequest request);
+
+    /** Supprime le compte de l’utilisateur authentifié (réinscription possible ensuite). */
+    void deleteMyAccount(Authentication authentication);
 }

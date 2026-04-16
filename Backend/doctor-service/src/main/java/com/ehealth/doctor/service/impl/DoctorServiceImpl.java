@@ -1,13 +1,19 @@
 package com.ehealth.doctor.service.impl;
 
+import com.ehealth.doctor.dto.AvailabilityDTO;
+import com.ehealth.doctor.dto.AvailabilityRequest;
 import com.ehealth.doctor.dto.DoctorCreateRequest;
 import com.ehealth.doctor.dto.DoctorDTO;
 import com.ehealth.doctor.dto.DoctorUpdateRequest;
 import com.ehealth.doctor.dto.PatientSummaryDTO;
 import com.ehealth.doctor.exception.DoctorEmailConflictException;
 import com.ehealth.doctor.exception.DoctorNotFoundException;
+import com.ehealth.doctor.exception.InvalidAvailabilityException;
 import com.ehealth.doctor.exception.SpecialtyNotFoundException;
+import com.ehealth.doctor.messaging.DoctorProfileEvent;
+import com.ehealth.doctor.messaging.DoctorProfileEventPublisher;
 import com.ehealth.doctor.model.Doctor;
+import com.ehealth.doctor.model.DoctorAvailability;
 import com.ehealth.doctor.model.Specialty;
 import com.ehealth.doctor.repository.DoctorRepository;
 import com.ehealth.doctor.repository.SpecialtyRepository;
@@ -18,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +36,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorRepository doctorRepository;
     private final SpecialtyRepository specialtyRepository;
     private final PatientLookupService patientLookupService;
+    private final DoctorProfileEventPublisher doctorProfileEventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -69,8 +78,11 @@ public class DoctorServiceImpl implements DoctorService {
                 .department(trimToNull(request.getDepartment()))
                 .active(true)
                 .build();
+        replaceAvailabilities(doctor, request.getAvailabilities());
         doctor = doctorRepository.save(doctor);
-        return toDto(doctorRepository.findByIdWithSpecialty(doctor.getId()).orElseThrow());
+        Doctor reloaded = doctorRepository.findByIdWithSpecialty(doctor.getId()).orElseThrow();
+        publishDoctorProfile(reloaded, "CREATED");
+        return toDto(reloaded);
     }
 
     @Override
@@ -115,8 +127,28 @@ public class DoctorServiceImpl implements DoctorService {
         if (request.getActive() != null) {
             doctor.setActive(request.getActive());
         }
+        if (request.getAvailabilities() != null) {
+            replaceAvailabilities(doctor, request.getAvailabilities());
+        }
         doctor = doctorRepository.save(doctor);
-        return toDto(doctorRepository.findByIdWithSpecialty(doctor.getId()).orElseThrow());
+        Doctor reloaded = doctorRepository.findByIdWithSpecialty(doctor.getId()).orElseThrow();
+        publishDoctorProfile(reloaded, "UPDATED");
+        return toDto(reloaded);
+    }
+
+    private void publishDoctorProfile(Doctor doctor, String eventType) {
+        if (doctor.getSpecialty() == null) {
+            return;
+        }
+        doctorProfileEventPublisher.publish(
+                new DoctorProfileEvent(
+                        doctor.getId(),
+                        doctor.getEmail(),
+                        doctor.getNom(),
+                        doctor.getPrenom(),
+                        doctor.getSpecialty().getCode(),
+                        eventType,
+                        Instant.now()));
     }
 
     @Override
@@ -159,6 +191,23 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private DoctorDTO toDto(Doctor d) {
+        List<AvailabilityDTO> avails =
+                d.getAvailabilities() == null || d.getAvailabilities().isEmpty()
+                        ? List.of()
+                        : d.getAvailabilities().stream()
+                                .sorted(
+                                        Comparator.comparing(DoctorAvailability::getDayOfWeek)
+                                                .thenComparing(DoctorAvailability::getHeureDebut))
+                                .map(
+                                        a ->
+                                                AvailabilityDTO.builder()
+                                                        .id(a.getId())
+                                                        .doctorId(d.getId())
+                                                        .dayOfWeek(a.getDayOfWeek())
+                                                        .heureDebut(a.getHeureDebut())
+                                                        .heureFin(a.getHeureFin())
+                                                        .build())
+                                .toList();
         return DoctorDTO.builder()
                 .id(d.getId())
                 .nom(d.getNom())
@@ -172,7 +221,32 @@ public class DoctorServiceImpl implements DoctorService {
                 .department(d.getDepartment())
                 .active(d.isActive())
                 .createdAt(d.getCreatedAt())
+                .availabilities(avails)
                 .build();
+    }
+
+    private void replaceAvailabilities(Doctor doctor, List<AvailabilityRequest> slots) {
+        if (slots == null) {
+            return;
+        }
+        doctor.getAvailabilities().clear();
+        for (AvailabilityRequest req : slots) {
+            validateSlot(req);
+            DoctorAvailability slot =
+                    DoctorAvailability.builder()
+                            .doctor(doctor)
+                            .dayOfWeek(req.getDayOfWeek())
+                            .heureDebut(req.getHeureDebut())
+                            .heureFin(req.getHeureFin())
+                            .build();
+            doctor.getAvailabilities().add(slot);
+        }
+    }
+
+    private static void validateSlot(AvailabilityRequest request) {
+        if (!request.getHeureFin().isAfter(request.getHeureDebut())) {
+            throw new InvalidAvailabilityException("L'heure de fin doit être après l'heure de début.");
+        }
     }
 
     private static String trimToNull(String s) {

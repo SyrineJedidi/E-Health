@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +44,13 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> me(Authentication authentication) {
         return ResponseEntity.ok(authService.me(authentication));
+    }
+
+    /** Supprime le compte lié au JWT (permet de refaire un POST /register avec le même email). */
+    @DeleteMapping("/account")
+    public ResponseEntity<Map<String, String>> deleteAccount(Authentication authentication) {
+        authService.deleteMyAccount(authentication);
+        return ResponseEntity.ok(Map.of("message", "Compte supprimé. Vous pouvez vous réinscrire avec le même email."));
     }
 
     @PostMapping("/forgot-password")

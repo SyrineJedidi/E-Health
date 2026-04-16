@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
-import { DayOfWeek, DoctorAvailability } from '../models/doctor-availability.model';
+import { DayOfWeek } from '../models/doctor-availability.model';
 import { Doctor } from '../models/doctor.model';
 import { Specialty } from '../models/specialty.model';
 import { Patient, RendezVous } from '../models/patient.model';
@@ -15,6 +15,9 @@ export interface DoctorCreatePayload {
   specialtyId: number;
   telephone?: string;
   service?: string;
+  department?: string;
+  /** Créneaux envoyés avec la création du médecin. */
+  availabilities?: AvailabilityPayload[];
 }
 
 export interface DoctorUpdatePayload {
@@ -24,12 +27,10 @@ export interface DoctorUpdatePayload {
   specialtyId?: number;
   telephone?: string;
   service?: string;
-}
-
-export interface SpecialtyPayload {
-  code: string;
-  label: string;
-  description?: string;
+  department?: string;
+  active?: boolean;
+  /** Si défini (y compris []), remplace tous les créneaux. */
+  availabilities?: AvailabilityPayload[];
 }
 
 export interface AvailabilityPayload {
@@ -108,45 +109,10 @@ export class DoctorService {
       .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
   }
 
+  /** Référentiel lecture seule (choix dans le formulaire médecin). */
   getSpecialties(): Observable<ApiResponse<Specialty[]>> {
     return this.http
       .get<ApiResponse<Specialty[]>>(this.specUrl)
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
-  }
-
-  createSpecialty(body: SpecialtyPayload): Observable<ApiResponse<Specialty>> {
-    return this.http
-      .post<ApiResponse<Specialty>>(this.specUrl, body)
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
-  }
-
-  updateSpecialty(id: number, body: SpecialtyPayload): Observable<ApiResponse<Specialty>> {
-    return this.http
-      .put<ApiResponse<Specialty>>(`${this.specUrl}/${id}`, body)
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
-  }
-
-  deleteSpecialty(id: number): Observable<ApiResponse<void>> {
-    return this.http
-      .delete<ApiResponse<void>>(`${this.specUrl}/${id}`)
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
-  }
-
-  getAvailabilities(doctorId: number): Observable<ApiResponse<DoctorAvailability[]>> {
-    return this.http
-      .get<ApiResponse<DoctorAvailability[]>>(`${this.baseUrl}/${doctorId}/availabilities`)
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
-  }
-
-  createAvailability(doctorId: number, body: AvailabilityPayload): Observable<ApiResponse<DoctorAvailability>> {
-    return this.http
-      .post<ApiResponse<DoctorAvailability>>(`${this.baseUrl}/${doctorId}/availabilities`, body)
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
-  }
-
-  deleteAvailability(doctorId: number, availabilityId: number): Observable<ApiResponse<void>> {
-    return this.http
-      .delete<ApiResponse<void>>(`${this.baseUrl}/${doctorId}/availabilities/${availabilityId}`)
       .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
   }
 

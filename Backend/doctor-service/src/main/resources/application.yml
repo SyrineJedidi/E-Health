@@ -23,9 +23,14 @@ spring:
   sql:
     init:
       mode: always
+  rabbitmq:
+    host: localhost
+    port: 5673
+    username: guest
+    password: guest
 
 server:
-  port: 8082
+  port: 8086
   servlet:
     encoding:
       charset: UTF-8
@@ -48,3 +53,26 @@ management:
     web:
       exposure:
         include: health,info
+
+# Swagger UI : http://localhost:8086/swagger-ui.html  (chemins autorisés dans SecurityConfig)
+springdoc:
+  swagger-ui:
+    operationsSorter: method
+
+# Portail /api/doctors/me : si compte auth avec rôle DOCTOR mais pas encore de ligne dans « doctors »,
+# création automatique d’une fiche (spécialité par défaut). Désactiver en prod si vous préférez du contrôle manuel.
+ehealth:
+  doctor:
+    portal:
+      auto-provision-doctor: true
+      default-specialty-id: 2
+  # RabbitMQ : scénario patient → doctor (consommation) + publication profil médecin
+  messaging:
+    exchange: ehealth.topic
+    routing:
+      doctor-profile: ehealth.routing.doctor.profile
+      patient-registered: ehealth.routing.patient.registered
+      patient-profile-updated: ehealth.routing.patient.profile.updated
+    queues:
+      doctor-ingest-patient: q.doctor.ingest.patient
+      doctorIngestPatientProfile: q.doctor.ingest.patient.profile

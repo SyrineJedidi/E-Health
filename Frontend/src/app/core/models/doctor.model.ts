@@ -1,3 +1,5 @@
+import { DoctorAvailability } from './doctor-availability.model';
+
 export interface Doctor {
   id?: number;
   nom: string;
@@ -8,4 +10,6 @@ export interface Doctor {
   specialtyId?: number;
   telephone?: string;
   service?: string;
+  /** Créneaux (plus de CRUD séparé côté API). */
+  availabilities?: DoctorAvailability[];
 }

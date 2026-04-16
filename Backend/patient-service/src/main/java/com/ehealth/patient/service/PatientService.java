@@ -15,7 +15,7 @@ public interface PatientService {
 
     PatientDTO createPatient(PatientDTO dto);
 
-    PatientDTO updatePatient(Long id, PatientDTO dto);
+    PatientDTO updatePatient(Long id, PatientDTO dto, String profileChangeInitiator);
 
     void deletePatient(Long id);
 

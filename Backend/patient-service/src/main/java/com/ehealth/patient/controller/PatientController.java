@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -84,7 +85,8 @@ public class PatientController {
     @Operation(summary = "Mettre à jour un patient")
     public ResponseEntity<ApiResponse<PatientDTO>> update(
             @PathVariable Long id, @RequestBody @Valid PatientDTO dto) {
-        PatientDTO updated = patientService.updatePatient(id, dto);
+        String initiator = initiatorRoleFromSecurityContext();
+        PatientDTO updated = patientService.updatePatient(id, dto, initiator);
         return ResponseEntity.ok(ApiResponse.success("Patient mis à jour", updated));
     }
 
@@ -109,5 +111,19 @@ public class PatientController {
                     List<Long> ids) {
         List<PatientDTO> list = patientService.getPatientsByIds(ids);
         return ResponseEntity.ok(ApiResponse.success("Patients (batch)", list));
+    }
+
+    /** Valeur du claim JWT {@code role} (PATIENT / DOCTOR / ADMIN), pour l’audit RabbitMQ côté médecin. */
+    private static String initiatorRoleFromSecurityContext() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return "UNKNOWN";
+        }
+        return auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .filter(a -> a.startsWith("ROLE_"))
+                .map(a -> a.substring(5))
+                .findFirst()
+                .orElse("UNKNOWN");
     }
 }

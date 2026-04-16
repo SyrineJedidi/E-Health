@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,4 +27,7 @@ public class DoctorDTO {
     private String department;
     private boolean active;
     private java.time.LocalDateTime createdAt;
+
+    /** Disponibilités liées (plus de CRUD séparé). */
+    private List<AvailabilityDTO> availabilities;
 }
