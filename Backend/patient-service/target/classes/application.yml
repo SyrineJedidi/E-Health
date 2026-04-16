@@ -23,9 +23,15 @@ spring:
   sql:
     init:
       mode: always
+  rabbitmq:
+    host: localhost
+    port: 5673
+    username: guest
+    password: guest
 
 server:
-  port: 8081
+  # 8091 : évite les conflits avec une autre appli sur 8081 (surcharge : SERVER_PORT ou variable d’env)
+  port: ${SERVER_PORT:8091}
   servlet:
     encoding:
       charset: UTF-8
@@ -58,3 +64,18 @@ jwt:
 feign:
   circuitbreaker:
     enabled: true
+
+# RabbitMQ : scénario doctor → patient (consommation) + publication inscription patient
+ehealth:
+  messaging:
+    exchange: ehealth.topic
+    routing:
+      doctor-profile: ehealth.routing.doctor.profile
+      patient-registered: ehealth.routing.patient.registered
+      patient-profile-updated: ehealth.routing.patient.profile.updated
+    queues:
+      patient-ingest-doctor: q.patient.ingest.doctor
+      # Mêmes noms que doctor-service : topologie créée côté patient pour ne pas perdre les messages
+      # si doctor-service démarre plus tard (files durables sur RabbitMQ).
+      doctor-ingest-patient: q.doctor.ingest.patient
+      doctorIngestPatientProfile: q.doctor.ingest.patient.profile

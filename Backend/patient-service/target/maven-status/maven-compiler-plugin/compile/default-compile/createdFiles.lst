@@ -5,12 +5,15 @@ com\ehealth\patient\controller\PublicPatientController.class
 com\ehealth\patient\controller\PatientPortalController.class
 com\ehealth\patient\exception\ErrorResponse$ErrorResponseBuilder.class
 com\ehealth\patient\exception\ErrorResponse.class
+com\ehealth\patient\messaging\PatientProfileUpdatedEventPublisher.class
 com\ehealth\patient\model\Patient.class
 com\ehealth\patient\dto\ApiResponse.class
 com\ehealth\patient\config\SecurityConfig.class
+com\ehealth\patient\config\PatientRabbitConfig.class
 com\ehealth\patient\dto\RendezVousDTO.class
 com\ehealth\patient\dto\DossierMedicalDTO$DossierMedicalDTOBuilder.class
 com\ehealth\patient\security\JwtAuthenticationFilter.class
+com\ehealth\patient\messaging\PatientRegisteredEvent.class
 com\ehealth\patient\PatientServiceApplication.class
 com\ehealth\patient\controller\PatientController.class
 com\ehealth\patient\exception\ResourceNotFoundException.class
@@ -18,6 +21,7 @@ com\ehealth\patient\client\AppointmentClient.class
 com\ehealth\patient\model\Gender.class
 com\ehealth\patient\client\AppointmentClientFallback.class
 com\ehealth\patient\exception\GlobalExceptionHandler.class
+com\ehealth\patient\messaging\DoctorProfileEventListener.class
 com\ehealth\patient\service\impl\PatientServiceImpl.class
 com\ehealth\patient\dto\DossierMedicalDTO.class
 com\ehealth\patient\dto\RendezVousDTO$RendezVousDTOBuilder.class
@@ -26,5 +30,8 @@ com\ehealth\patient\exception\EmailAlreadyExistsException.class
 com\ehealth\patient\exception\PatientNotFoundException.class
 com\ehealth\patient\dto\PatientDTO.class
 com\ehealth\patient\security\JwtUtil.class
+com\ehealth\patient\messaging\DoctorProfileEvent.class
 com\ehealth\patient\dto\PatientDTO$PatientDTOBuilder.class
+com\ehealth\patient\messaging\PatientProfileUpdatedEvent.class
 com\ehealth\patient\service\PatientService.class
+com\ehealth\patient\messaging\PatientRegisteredEventPublisher.class
